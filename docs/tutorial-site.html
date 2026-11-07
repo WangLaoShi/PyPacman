@@ -1,0 +1,2348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyPacman 游戏开发完全教程</title>
+    <style>
+        :root {
+            --text-primary: #1a1d24;
+            --text-secondary: #4a5568;
+            --accent-green: #1f5a4a;
+            --accent-gold: #b87333;
+            --bg-white: #ffffff;
+            --bg-light: #f7f9fc;
+            --bg-code: #2d2d2d;
+            --border-light: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+            color: var(--text-primary);
+            background: var(--bg-white);
+            line-height: 1.7;
+            font-size: 15px;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: Georgia, 'Times New Roman', serif;
+            color: var(--accent-green);
+            margin: 1.5em 0 0.5em 0;
+            line-height: 1.3;
+        }
+
+        h1 { font-size: 2.2em; border-bottom: 3px solid var(--accent-gold); padding-bottom: 0.3em; }
+        h2 { font-size: 1.8em; border-bottom: 2px solid var(--border-light); padding-bottom: 0.2em; }
+        h3 { font-size: 1.4em; color: var(--text-primary); }
+        h4 { font-size: 1.2em; color: var(--accent-green); }
+
+        .header-banner {
+            background: linear-gradient(135deg, var(--accent-green) 0%, #2d7a5f 100%);
+            color: white;
+            padding: 3em 2em;
+            text-align: center;
+            margin-bottom: 2em;
+        }
+
+        .header-banner h1 {
+            color: white;
+            border: none;
+            margin: 0 0 0.3em 0;
+            font-size: 2.5em;
+        }
+
+        .header-banner .subtitle {
+            font-size: 1.2em;
+            opacity: 0.95;
+            margin-bottom: 0.5em;
+        }
+
+        .header-banner .meta {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 25% 50% 25%;
+            max-width: 1600px;
+            margin: 0 auto;
+            gap: 2em;
+            padding: 0 1em;
+        }
+
+        .sidebar-left {
+            position: sticky;
+            top: 1em;
+            height: fit-content;
+            max-height: calc(100vh - 2em);
+            overflow-y: auto;
+            padding: 1.5em;
+            background: var(--bg-light);
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+        }
+
+        .sidebar-left h3 {
+            color: var(--accent-green);
+            font-size: 1.1em;
+            margin: 0 0 1em 0;
+            padding-bottom: 0.5em;
+            border-bottom: 2px solid var(--accent-gold);
+        }
+
+        .chapter-list {
+            list-style: none;
+            counter-reset: chapter;
+        }
+
+        .chapter-list li {
+            counter-increment: chapter;
+            margin: 0.8em 0;
+            padding: 0.6em 0.8em;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95em;
+        }
+
+        .chapter-list li:hover {
+            background: white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .chapter-list li::before {
+            content: counter(chapter, decimal-leading-zero);
+            color: var(--accent-gold);
+            font-weight: 600;
+            font-family: monospace;
+            margin-right: 0.5em;
+        }
+
+        .main-content {
+            padding: 1em 2em;
+            min-width: 0;
+        }
+
+        .main-content section {
+            margin: 3em 0;
+            scroll-margin-top: 2em;
+        }
+
+        .sidebar-right {
+            position: sticky;
+            top: 1em;
+            height: fit-content;
+            max-height: calc(100vh - 2em);
+            overflow-y: auto;
+            padding: 1.5em;
+            background: var(--bg-light);
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+            font-size: 0.9em;
+        }
+
+        .sidebar-right h3 {
+            color: var(--accent-green);
+            font-size: 1em;
+            margin: 0 0 1em 0;
+            padding-bottom: 0.5em;
+            border-bottom: 2px solid var(--accent-gold);
+        }
+
+        .toc-list {
+            list-style: none;
+        }
+
+        .toc-list li {
+            margin: 0.6em 0;
+            padding: 0.4em 0.6em;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .toc-list li.active {
+            border-left-color: var(--accent-gold);
+            background: white;
+            font-weight: 600;
+        }
+
+        .toc-list a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: block;
+        }
+
+        .toc-list li.active a {
+            color: var(--accent-green);
+        }
+
+        .code-block {
+            margin: 1.5em 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+
+        .code-header {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 0.6em 1em;
+            font-family: monospace;
+            font-size: 0.85em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #3e3e3e;
+        }
+
+        .code-header .file-path {
+            color: var(--accent-gold);
+        }
+
+        .copy-btn {
+            background: var(--accent-green);
+            color: white;
+            border: none;
+            padding: 0.3em 0.8em;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: background 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: #2d7a5f;
+        }
+
+        pre {
+            background: var(--bg-code);
+            color: #d4d4d4;
+            padding: 1.2em;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .keyword { color: #569cd6; }
+        .string { color: #ce9178; }
+        .comment { color: #6a9955; font-style: italic; }
+        .function { color: #dcdcaa; }
+        .number { color: #b5cea8; }
+        .decorator { color: #c586c0; }
+        .class-name { color: #4ec9b0; }
+
+        .diagram-container {
+            margin: 2em 0;
+            padding: 1.5em;
+            background: var(--bg-light);
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+            overflow-x: auto;
+        }
+
+        .diagram-container svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5em 0;
+            font-size: 0.95em;
+        }
+
+        th {
+            background: var(--accent-green);
+            color: white;
+            padding: 0.8em;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 0.7em 0.8em;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        tr:hover {
+            background: var(--bg-light);
+        }
+
+        .info-box {
+            padding: 1em 1.2em;
+            margin: 1.5em 0;
+            border-left: 4px solid var(--accent-gold);
+            background: #fffbf0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .info-box.tip {
+            border-left-color: var(--accent-green);
+            background: #f0fdf4;
+        }
+
+        .info-box strong {
+            color: var(--accent-green);
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr 3fr;
+            }
+            .sidebar-left {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .sidebar-right {
+                position: static;
+                max-height: none;
+                margin-bottom: 2em;
+            }
+            .header-banner h1 {
+                font-size: 1.8em;
+            }
+            .main-content {
+                padding: 1em;
+            }
+        }
+
+        @media print {
+            .sidebar-left, .sidebar-right, .copy-btn, .header-banner {
+                display: none;
+            }
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .main-content {
+                padding: 0;
+            }
+            pre {
+                page-break-inside: avoid;
+                font-size: 0.8em;
+            }
+            h1, h2, h3 {
+                page-break-after: avoid;
+            }
+        }
+
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 1em;
+            right: 1em;
+            background: var(--accent-green);
+            color: white;
+            border: none;
+            padding: 0.6em 1em;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: var(--shadow-md);
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+            .sidebar-right {
+                display: none;
+            }
+            .sidebar-right.show {
+                display: block;
+                position: fixed;
+                top: 0;
+                right: 0;
+                width: 80%;
+                max-width: 300px;
+                height: 100vh;
+                z-index: 999;
+                border-radius: 0;
+                overflow-y: auto;
+            }
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2em;
+            margin-top: 3em;
+            border-top: 2px solid var(--border-light);
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        .screenshot-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5em;
+            margin: 2em 0;
+        }
+
+        .screenshot-item {
+            margin: 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            background: white;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .screenshot-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+
+        .screenshot-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-bottom: 2px solid var(--accent-gold);
+        }
+
+        .screenshot-item figcaption {
+            padding: 0.8em 1em;
+            background: var(--bg-light);
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-banner">
+        <h1>PyPacman 游戏开发完全教程</h1>
+        <div class="subtitle">从零开始用 Python 和 pygame 构建经典游戏</div>
+        <div class="meta">基于 PyPacman 开源项目 | 适合 Python 初学者</div>
+    </div>
+
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">目录</button>
+
+    <div class="container">
+        <aside class="sidebar-left">
+            <h3>执行摘要</h3>
+            <p style="font-size: 0.9em; color: var(--text-secondary); margin-bottom: 1em;">
+                本教程通过一个完整的吃豆人游戏项目，系统讲解 Python 编程核心概念。
+                从基础的变量、循环，到进阶的类、继承、设计模式，每个知识点都对应真实代码。
+            </p>
+            <h3>快速导航</h3>
+            <ul class="chapter-list">
+                <li onclick="scrollToSection('game-rules')">游戏说明</li>
+                <li onclick="scrollToSection('overview')">项目概览</li>
+                <li onclick="scrollToSection('architecture')">架构设计</li>
+                <li onclick="scrollToSection('main-py')">入口文件</li>
+                <li onclick="scrollToSection('configs-py')">常量管理</li>
+                <li onclick="scrollToSection('runner-py')">主循环</li>
+                <li onclick="scrollToSection('state-py')">状态机</li>
+                <li onclick="scrollToSection('event-py')">事件处理</li>
+                <li onclick="scrollToSection('grid-py')">迷宫渲染</li>
+                <li onclick="scrollToSection('pacman-py')">吃豆人</li>
+                <li onclick="scrollToSection('ghosts-py')">幽灵 AI</li>
+                <li onclick="scrollToSection('sounds-py')">音效系统</li>
+                <li onclick="scrollToSection('knowledge')">知识速查</li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <section id="game-rules">
+                <h2>游戏说明</h2>
+                <p>
+                    在开始学习代码之前，让我们先了解 PyPacman 的游戏规则。
+                    这是一个经典的吃豆人游戏，目标是在避免幽灵追捕的同时吃掉迷宫中的所有豆子。
+                </p>
+
+                <h3>基本规则</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5em; margin: 1.5em 0;">
+                    <div class="info-box">
+                        <h4 style="margin-top: 0; color: var(--accent-green);">🎯 游戏目标</h4>
+                        <ul style="margin: 0.5em 0; padding-left: 1.5em; line-height: 1.8;">
+                            <li>控制吃豆人（黄色圆形）在迷宫中移动</li>
+                            <li>吃掉所有<strong>小豆豆</strong>（白色方块）</li>
+                            <li>避免被<strong>幽灵</strong>（彩色圆形）碰到</li>
+                            <li>吃完所有豆子即可过关</li>
+                        </ul>
+                    </div>
+                    <div class="info-box">
+                        <h4 style="margin-top: 0; color: var(--accent-green);">🎮 操作方式</h4>
+                        <ul style="margin: 0.5em 0; padding-left: 1.5em; line-height: 1.8;">
+                            <li><strong>方向键 ↑↓←→</strong>：控制吃豆人移动方向</li>
+                            <li><strong>ESC</strong>：暂停/退出游戏</li>
+                            <li>吃豆人会持续移动，直到遇到墙壁或改变方向</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>游戏元素</h3>
+                <div class="diagram-container">
+                    <svg viewBox="0 0 900 280" xmlns="http://www.w3.org/2000/svg">
+                        <!-- 吃豆人 -->
+                        <rect x="30" y="30" width="120" height="120" rx="8" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="2"/>
+                        <circle cx="90" cy="90" r="35" fill="#ffff00"/>
+                        <path d="M 90 90 L 125 75 L 125 105 Z" fill="#f7f9fc"/>
+                        <text x="90" y="170" text-anchor="middle" fill="#1a1d24" font-size="13" font-weight="600">吃豆人</text>
+                        <text x="90" y="190" text-anchor="middle" fill="#4a5568" font-size="11">玩家控制</text>
+                        
+                        <!-- 小豆豆 -->
+                        <rect x="180" y="30" width="120" height="120" rx="8" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="2"/>
+                        <rect x="230" y="80" width="10" height="10" fill="white"/>
+                        <text x="240" y="170" text-anchor="middle" fill="#1a1d24" font-size="13" font-weight="600">小豆豆</text>
+                        <text x="240" y="190" text-anchor="middle" fill="#4a5568" font-size="11">+10 分</text>
+                        
+                        <!-- 能量豆 -->
+                        <rect x="330" y="30" width="120" height="120" rx="8" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="2"/>
+                        <circle cx="390" cy="85" r="15" fill="#b87333"/>
+                        <text x="390" y="170" text-anchor="middle" fill="#1a1d24" font-size="13" font-weight="600">能量豆</text>
+                        <text x="390" y="190" text-anchor="middle" fill="#4a5568" font-size="11">+50 分</text>
+                        
+                        <!-- 幽灵 -->
+                        <rect x="480" y="30" width="120" height="120" rx="8" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="2"/>
+                        <circle cx="540" cy="80" r="30" fill="#ff0000"/>
+                        <circle cx="530" cy="75" r="5" fill="white"/>
+                        <circle cx="550" cy="75" r="5" fill="white"/>
+                        <circle cx="530" cy="75" r="2" fill="black"/>
+                        <circle cx="550" cy="75" r="2" fill="black"/>
+                        <path d="M 510 100 Q 515 110 520 100 Q 525 110 530 100 Q 535 110 540 100 Q 545 110 550 100 Q 555 110 560 100 Q 565 110 570 100" 
+                              fill="none" stroke="#ff0000" stroke-width="3"/>
+                        <text x="540" y="170" text-anchor="middle" fill="#1a1d24" font-size="13" font-weight="600">幽灵</text>
+                        <text x="540" y="190" text-anchor="middle" fill="#4a5568" font-size="11">敌人</text>
+                        
+                        <!-- 受惊幽灵 -->
+                        <rect x="630" y="30" width="120" height="120" rx="8" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="2"/>
+                        <circle cx="690" cy="80" r="30" fill="#2d2d8a"/>
+                        <circle cx="680" cy="75" r="5" fill="white"/>
+                        <circle cx="700" cy="75" r="5" fill="white"/>
+                        <circle cx="680" cy="75" r="2" fill="black"/>
+                        <circle cx="700" cy="75" r="2" fill="black"/>
+                        <path d="M 660 100 Q 665 110 670 100 Q 675 110 680 100 Q 685 110 690 100 Q 695 110 700 100 Q 705 110 710 100 Q 715 110 720 100" 
+                              fill="none" stroke="#2d2d8a" stroke-width="3"/>
+                        <text x="690" y="170" text-anchor="middle" fill="#1a1d24" font-size="13" font-weight="600">受惊幽灵</text>
+                        <text x="690" y="190" text-anchor="middle" fill="#4a5568" font-size="11">可吃掉 +200</text>
+                        
+                        <!-- 墙壁 -->
+                        <rect x="780" y="30" width="120" height="120" rx="8" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="2"/>
+                        <rect x="810" y="60" width="60" height="60" fill="#2d2d8a"/>
+                        <text x="840" y="170" text-anchor="middle" fill="#1a1d24" font-size="13" font-weight="600">墙壁</text>
+                        <text x="840" y="190" text-anchor="middle" fill="#4a5568" font-size="11">不可通过</text>
+                        
+                        <!-- 说明文字 -->
+                        <text x="450" y="230" text-anchor="middle" fill="#1a1d24" font-size="12" font-style="italic">
+                            吃掉能量豆后，幽灵会变成蓝色并可以被吃掉，获得额外分数！
+                        </text>
+                    </svg>
+                </div>
+
+                <h3>计分系统</h3>
+                <table style="width: 100%; border-collapse: collapse; margin: 1em 0;">
+                    <thead>
+                        <tr style="background: var(--accent-green); color: white;">
+                            <th style="padding: 0.8em; text-align: left;">行为</th>
+                            <th style="padding: 0.8em; text-align: left;">得分</th>
+                            <th style="padding: 0.1.5em; text-align: left;">说明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom: 1px solid var(--border-light);">
+                            <td style="padding: 0.8em;">吃掉小豆豆</td>
+                            <td style="padding: 0.8em; font-weight: 600; color: var(--accent-green);">+10 分</td>
+                            <td style="padding: 0.8em;">迷宫中有大量小豆豆，是主要得分来源</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border-light);">
+                            <td style="padding: 0.8em;">吃掉能量豆</td>
+                            <td style="padding: 0.8em; font-weight: 600; color: var(--accent-green);">+50 分</td>
+                            <td style="padding: 0.8em;">能量豆数量较少，但能触发幽灵恐慌</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border-light);">
+                            <td style="padding: 0.8em;">吃掉受惊幽灵</td>
+                            <<td style="padding: 0.8em; font-weight: 600; color: var(--accent-gold);">+200 分</td>
+                            <td style="padding: 0.8em;">幽灵恐慌期间吃掉幽灵，高分奖励</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0.8em;">连续吃幽灵</td>
+                            <td style="padding: 0.8em; font-weight: 600; color: var(--accent-gold);">+400/+800 分</td>
+                            <td style="padding:>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>幽灵行为模式</h3>
+                <p>
+                    幽灵有<strong>三种行为模式</strong>，会在游戏中自动切换：
+                </p>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5em; margin: 1.5em 0;">
+                    <div class="info-box">
+                        <h4 style="margin-top: 0; color: var(--accent-green);">🔴 散开模式（Scatter）</h4>
+                        <p style="margin: 0.5em 0; line-height: 1.6;">
+                            幽灵各自回到迷宫的四个角落，在那里徘徊。
+                            这是躲避幽灵的好时机！
+                        </p>
+                        <p style="margin: 0.5em 0; font-size: 0.9em; color: var(--text-secondary);">
+                            <strong>持续时间：</strong>约 7 秒
+                        </p>
+                    </div>
+                    <div class="info-box">
+                        <h4 style="margin-top: 0; color: var(--accent-gold);">🟡 追逐模式（Chase）</h4>
+                        <p style="margin: 0.5em 0; line-height: 1.6;">
+                            幽灵会主动追踪吃豆人。每只幽灵有不同的追踪策略：
+                        </p>
+                        <ul style="margin: 0.5em 0; padding-left: 1.5em; font-size: 0.9em; line-height: 1.6;">
+                            <li><strong>Blinky（红色）</strong>：直接追踪吃豆人位置</li>
+                            <li><strong>Pinky（粉色）</strong>：预判吃豆人前方 4 格</li>
+                            <li><strong>Inky（青色）</strong>：复杂包抄策略</li>
+                            <li><strong>Clyde（橙色）</strong>：距离远时追踪，近时逃跑</li>
+                        </ul>
+                        <p style="margin: 0.5em 0; font-size: 0.9em; color: var(--text-secondary);">
+                            <strong>持续时间：</strong>约 20 秒
+                        </p>
+                    </div>
+                    <div class="info-box">
+                        <h4 style="margin-top: 0; color: #2d2d8a;">🔵 恐慌模式（Frightened）</h4>
+                        <p style="margin: 0.5em 0; line-height: 1.6;">
+                            吃掉能量豆后触发，幽灵变成蓝色并随机逃跑。
+                            此时可以吃掉幽灵获得高分！
+                        </p>
+                        <p style="margin: 0.5em 0; font-size: 0.9em; color: var(--text-secondary);">
+                            <strong>持续时间：</strong>约 6 秒（会逐渐缩短）
+                        </p>
+                    </div>
+                </div>
+
+                <div class="info-box tip">
+                    <strong>游戏技巧：</strong>
+                    <ul style="margin: 0.5em 0; padding-left: 1.5em; line-height: 1.8;">
+                        <li>利用散开模式时安全地吃掉附近的豆子</li>
+                        <li>在追逐模式下规划好逃跑路线</li>
+                        <li>能量豆是翻盘的关键，在幽灵密集区使用效果最佳</li>
+                        <li>连续吃掉多只幽灵可以获得更高分数（200→400→800→1600）</li>
+                    </ul>
+                </div>
+
+                <h3>生命与游戏结束</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5em; margin: 1.5em 0;">
+                    <div class="info-box">
+                        <h4 style="margin-top: 0; color: var(--accent-green);">❤️ 生命系统</h4>
+                        <ul style="margin: 0.5em 0; padding-left: 1.5em; line-height: 1.8;">
+                            <li>初始生命：<strong>3 条</strong></li>
+                            <li>被幽灵碰到：失去 1 条生命</li>
+                            <li>生命耗尽：游戏结束</li>
+                            <li>吃完所有豆子：进入下一关</li>
+                        </ul>
+                    </div>
+                    <div class="info-box">
+                        <h4 style="margin-top: 0; color: var(--accent-gold);">🏆 高分系统</h4>
+                        <ul style="margin: 0.5em 0; padding-left: 1.5em; line-height: 1.8;">
+                            <li>游戏自动记录历史最高分</li>
+                            <li>最高分保存在 <code>levels/stats.json</code></li>
+                            <li>每次游戏结束时会更新最高分</li>
+                            <li>挑战自己，打破记录！</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <strong>现在你了解了游戏规则，接下来让我们深入代码，看看这些功能是如何用 Python 实现的！</strong>
+                    <br>
+                    <a href="#overview" style="color: var(--accent-green); font-weight: 600; text-decoration: none;">
+                        开始学习 →
+                    </a>
+                </div>
+            </section>
+
+            <section id="overview">
+                <h2>一、项目概览</h2>
+                <p>
+                    PyPacman 是一个用 Python 和 pygame 库开发的经典吃豆人游戏克隆。
+                    项目结构清晰，代码注释详尽，非常适合作为 Python 入门到进阶的教学项目。
+                </p>
+
+                <h3>项目目录结构</h3>
+                <div class="diagram-container">
+                    <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="350" y="20" width="100" height="40" rx="8" fill="#1f5a4a" stroke="#b87333" stroke-width="2"/>
+                        <text x="400" y="45" text-anchor="middle" fill="white" font-size="14" font-weight="600">PyPacman/</text>
+                        
+                        <line x1="400" y1="60" x2="400" y2="90" stroke="#1f5a4a" stroke-width="2"/>
+                        <line x1="100" y1="90" x2="700" y2="90" stroke="#1f5a4a" stroke-width="2"/>
+                        
+                        <line x1="100" y1="90" x2="100" y2="120" stroke="#1f5a4a" stroke-width="2"/>
+                        <rect x="50" y="120" width="100" height="35" rx="6" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="1.5"/>
+                        <text x="100" y="142" text-anchor="middle" fill="#1a1d24" font-size="12" font-family="monospace">main.py</text>
+                        
+                        <line x1="250" y1="90" x2="250" y2="120" stroke="#1f5a4a" stroke-width="2"/>
+                        <rect x="200" y="120" width="100" height="35" rx="6" fill="#1f5a4a" stroke="#b87333" stroke-width="2"/>
+                        <text x="250" y="142" text-anchor="middle" fill="white" font-size="12" font-weight="600">src/</text>
+                        
+                        <line x1="250" y1="155" x2="250" y2="180" stroke="#1f5a4a" stroke-width="1.5"/>
+                        <line x1="180" y1="180" x2="320" y2="180" stroke="#1f5a4a" stroke-width="1.5"/>
+                        
+                        <rect x="160" y="190" width="80" height="30" rx="4" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="1"/>
+                        <text x="200" y="210" text-anchor="middle" fill="#1a1d24" font-size="10" font-family="monospace">configs.py</text>
+                        
+                        <rect x="260" y="190" width="80" height="30" rx="4" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="1"/>
+                        <text x="300" y="210" text-anchor="middle" fill="#1a1d24" font-size="10" font-family="monospace">runner.py</text>
+                        
+                        <line x1="200" y1="220" x2="200" y2="250" stroke="#1f5a4a" stroke-width="1.5"/>
+                        <rect x="160" y="250" width="80" height="30" rx="4" fill="#b87333" stroke="#1f5a4a" stroke-width="1.5"/>
+                        <text x="200" y="270" text-anchor="middle" fill="white" font-size="10" font-weight="600">game/</text>
+                        
+                        <rect x="140" y="290" width="120" height="25" rx="3" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="1"/>
+                        <text x="200" y="307" text-anchor="middle" fill="#1a1d24" font-size="9" font-family="monospace">state_management.py</text>
+                        
+                        <rect x="140" y="320" width="120" height="25" rx="3" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="1"/>
+                        <text x="200" y="337" text-anchor="middle" fill="#1a1d24" font-size="9" font-family="monospace">event_management.py</text>
+                        
+                        <line x1="300" y1="220" x2="300" y2="250" stroke="#1f5a4a" stroke-width="1.5"/>
+                        <rect x="260" y="250" width="80" height="30" rx="4" fill="#b87333" stroke="#1f5a4a" stroke-width="1.5"/>
+                        <text x="300" y="270" text-anchor="middle" fill="white" font-size="10" font-weight="600">sprites/</text>
+                        
+                        <rect x="250" y="290" width="100" height="25" rx="3" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="1"/>
+                        <text x="300" y="307" text-anchor="middle" fill="#1a1d24" font-size="9" font-family="monospace">pacman.py</text>
+                        
+                        <rect x="250" y="320" width="100" height="25" rx="3" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="1"/>
+                        <text x="300" y="337" text-anchor="middle" fill="#1a1d24" font-size="9" font-family="monospace">ghosts.py</text>
+                        
+                        <line x1="450" y1="90" x2="450" y2="120" stroke="#1f5a4a" stroke-width="2"/>
+                        <rect x="400" y="120" width="100" height="35" rx="6" fill="#b87333" stroke="#1f5a4a" stroke-width="2"/>
+                        <text x="450" y="142" text-anchor="middle" fill="white" font-size="12" font-weight="600">gui/</text>
+                        
+                        <rect x="390" y="170" width="120" height="25" rx="3" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="1"/>
+                        <text x="450" y="187" text-anchor="middle" fill="#1a1d24" font-size="9" font-family="monospace">pacman_grid.py</text>
+                        
+                        <rect x="390" y="200" width="120" height="25" rx="3" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="1"/>
+                        <text x="450" y="217" text-anchor="middle" fill="#1a1d24" font-size="9" font-family="monospace">score_screen.py</text>
+                        
+                        <line x1="600" y1="90" x2="600" y2="120" stroke="#1f5a4a" stroke-width="2"/>
+                        <rect x="550" y="120" width="100" height="35" rx="6" fill="#1f5a4a" stroke="#b87333" stroke-width="2"/>
+                        <text x="600" y="142" text-anchor="middle" fill="white" font-size="12" font-weight="600">assets/</text>
+                        
+                        <rect x="540" y="170" width="120" height="25" rx="3" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="1"/>
+                        <text x="600" y="187" text-anchor="middle" fill="#1a1d24" font-size="9">图片、音效资源</text>
+                        
+                        <line x1="700" y1="90" x2="700" y2="120" stroke="#1f5a4a" stroke-width="2"/>
+                        <rect x="650" y="120" width="100" height="35" rx="6" fill="#1f5a4a" stroke="#b87333" stroke-width="2"/>
+                        <text x="700" y="142" text-anchor="middle" fill="white" font-size="12" font-weight="600">levels/</text>
+                        
+                        <rect x="640" y="170" width="120" height="25" rx="3" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="1"/>
+                        <text x="700" y="187" text-anchor="middle" fill="#1a1d24" font-size="9" font-family="monospace">level1.json</text>
+                        
+                        <rect x="50" y="400" width="20" height="20" rx="3" fill="#1f5a4a"/>
+                        <text x="80" y="415" fill="#1a1d24" font-size="11">核心模块</text>
+                        
+                        <rect x="200" y="400" width="20" height="20" rx="3" fill="#b87333"/>
+                        <text x="230" y="415" fill="#1a1d24" font-size="11">子包目录</text>
+                        
+                        <rect x="350" y="400" width="20" height="20" rx="3" fill="#f7f9fc" stroke="#1f5a4a"/>
+                        <text x="380" y="415" fill="#1a1d24" font-size="11">普通文件</text>
+                    </svg>
+                </div>
+
+                <h3>游戏运行截图</h3>
+                <div class="screenshot-gallery">
+                    <figure class="screenshot-item">
+                        <img src="screenshots/01_游戏初始界面.png" alt="游戏初始界面" loading="lazy">
+                        <figcaption>游戏启动时的初始界面，显示迷宫布局和初始分数</figcaption>
+                    </figure>
+                    <figure class="screenshot-item">
+                        <img src="screenshots/02_游戏进行中_2秒.png" alt="游戏进行中" loading="lazy">
+                        <figcaption>吃豆人开始移动，幽灵从巢穴中释放</figcaption>
+                    </figure>
+                    <figure class="screenshot-item">
+                        <img src="screenshots/03_游戏进行中_4秒.png" alt="游戏进行中" loading="lazy">
+                        <figcaption>游戏进行中，吃豆人躲避幽灵并吃掉豆子</figcaption>
+                    </figure>
+                    <figure class="screenshot-item">
+                        <img src="screenshots/04_游戏进行中_6秒.png" alt="游戏进行中" loading="lazy">
+                        <figcaption>幽灵进入追逐模式，分数逐渐增加</figcaption>
+                    </figure>
+                </div>
+
+                <div class="info-box">
+                    <strong>学习建议：</strong>先通读项目结构，建立整体印象。然后按照本教程的章节顺序，
+                    从入口文件 main.py 开始，逐步深入到各个模块。每学完一个章节，就打开对应的源码文件对照阅读。
+                    可以运行 <code>python main.py</code> 亲自体验游戏，观察代码与运行效果的对应关系。
+                </div>
+            </section>
+
+            <section id="architecture">
+                <h2>二、架构设计</h2>
+                <p>
+                    PyPacman 采用经典的 MVC（Model-View-Controller）变体架构，
+                    将游戏逻辑、状态管理和渲染分离，代码结构清晰，易于理解和扩展。
+                </p>
+
+                <h3>数据流向图</h3>
+                <div class="diagram-container">
+                    <svg viewBox="0 0 900 400" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="50" y="150" width="120" height="60" rx="8" fill="#1f5a4a" stroke="#b87333" stroke-width="2"/>
+                        <text x="110" y="175" text-anchor="middle" fill="white" font-size="13" font-weight="600">键盘输入</text>
+                        <text x="110" y="195" text-anchor="middle" fill="white" font-size="10">方向键、ESC</text>
+                        
+                        <line x1="170" y1="180" x2="230" y2="180" stroke="#b87333" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        
+                        <rect x="230" y="150" width="140" height="60" rx="8" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="2"/>
+                        <text x="300" y="175" text-anchor="middle" fill="#1a1d24" font-size="13" font-weight="600">EventHandler</text>
+                        <text x="300" y="195" text-anchor="middle" fill="#4a5568" font-size="10">event_management.py</text>
+                        
+                        <line x1="370" y1="180" x2="430" y2="180" stroke="#b87333" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        
+                        <rect x="430" y="130" width="140" height="100" rx="8" fill="#b87333" stroke="#1f5a4a" stroke-width="3"/>
+                        <text x="500" y="155" text-anchor="middle" fill="white" font-size="14" font-weight="700">GameState</text>
+                        <text x="500" y="175" text-anchor="middle" fill="white" font-size="10">state_management.py</text>
+                        <text x="500" y="195" text-anchor="middle" fill="white" font-size="9">direction, points</text>
+                        <text x="500" y="210" text-anchor="middle" fill="white" font-size="9">ghost_mode, ...</text>
+                        
+                        <line x1="500" y1="130" x2="500" y2="70" stroke="#b87333" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        
+                        <rect x="420" y="20" width="160" height="50" rx="8" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="2"/>
+                        <text x="500" y="40" text-anchor="middle" fill="#1a1d24" font-size="13" font-weight="600">Sprites</text>
+                        <text x="500" y="58" text-anchor="middle" fill="#4a5568" font-size="10">pacman.py, ghosts.py</text>
+                        
+                        <line x1="580" y1="45" x2="680" y2="45" stroke="#b87333" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        <line x1="680" y1="45" x2="680" y2="150" stroke="#b87333" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        
+                        <rect x="620" y="150" width="140" height="60" rx="8" fill="#1f5a4a" stroke="#b87333" stroke-width="2"/>
+                        <text x="690" y="175" text-anchor="middle" fill="white" font-size="13" font-weight="600">渲染层</text>
+                        <text x="690" y="195" text-anchor="middle" fill="white" font-size="10">screen.fill() + draw()</text>
+                        
+                        <line x1="760" y1="180" x2="820" y2="180" stroke="#b87333" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        
+                        <rect x="820" y="150" width="60" height="60" rx="8" fill="#b87333" stroke="#1f5a4a" stroke-width="2"/>
+                        <text x="850" y="185" text-anchor="middle" fill="white" font-size="12" font-weight="600">屏幕</text>
+                        
+                        <path d="M 690 210 L 690 320 L 110 320 L 110 210" fill="none" stroke="#1f5a4a" stroke-width="1.5" stroke-dasharray="5,5" marker-end="url(#arrowhead)"/>
+                        <text x="400" y="340" text-anchor="middle" fill="#4a5568" font-size="11" font-style="italic">下一帧循环</text>
+                        
+                        <defs>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="#b87333"/>
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+
+                <h3>代码与运行效果对照</h3>
+                <p>
+                    下面的截图展示了游戏运行时的实际效果。每一个视觉元素都对应代码中的特定模块：
+                    迷宫来自 <code>pacman_grid.py</code> 对 JSON 的解析，吃豆人和幽灵来自 <code>sprites/</code> 目录，
+                    分数显示来自 <code>score_screen.py</code>。
+                </p>
+                <div class="screenshot-gallery" style="grid-template-columns: repeat(2, 1fr);">
+                    <figure class="screenshot-item">
+                        <img src="screenshots/05_游戏进行中_8秒.png" alt="游戏运行中期" loading="lazy">
+                        <figcaption>游戏运行 8 秒后的状态，注意分数变化和幽灵位置</figcaption>
+                    </figure>
+                    <figure class="screenshot-item">
+                        <img src="screenshots/06_游戏结束画面.png" alt="游戏结束" loading="lazy">
+                        <figcaption>游戏结束画面，显示最终得分</figcaption>
+                    </figure>
+                </div>
+
+                <div class="info-box tip">
+                    <strong>核心思想：</strong>所有游戏状态都集中在 GameState 对象中，其他模块通过读写这个对象来协作。
+                    这种设计让代码更容易调试和维护——如果你想知道「分数为什么不对」，只需要检查 GameState.points 的变化。
+                </div>
+            </section>
+
+            <section id="main-py">
+                <h2>三、入口文件 main.py</h2>
+                <p>
+                    整个游戏的入口文件只有 3 行有效代码，体现了 Python「简洁即美」的设计哲学。
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="file-path">main.py</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code><span class="comment"># 从 src 包的 runner 模块导入 GameRun 类</span>
+<span class="keyword">from</span> src.runner <span class="keyword">import</span> GameRun
+
+<span class="comment"># 只有直接运行本文件时才执行（被 import 时不执行）</span>
+<span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:
+    gr = GameRun()  <span class="comment"># 创建游戏运行器对象</span>
+    gr.main()       <span class="comment"># 启动游戏主循环</span></code></pre>
+                </div>
+
+                <h3>知识点解析</h3>
+                <table>
+                    <tr>
+                        <th>概念</th>
+                        <th>说明</th>
+                        <th>为什么这样写</th>
+                    </tr>
+                    <tr>
+                        <td><code>from ... import ...</code></td>
+                        <td>从其他模块导入特定的类或函数</td>
+                        <td>避免写全路径 <code>src.runner.GameRun()</code>，代码更简洁</td>
+                    </tr>
+                    <tr>
+                        <td><code>if __name__ == '__main__'</code></td>
+                        <td>判断文件是被直接运行还是被导入</td>
+                        <td>防止其他文件 import main.py 时意外启动游戏</td>
+                    </tr>
+                    <tr>
+                        <td><code>GameRun()</code></td>
+                        <td>实例化类，创建对象</td>
+                        <td>面向对象编程：类是图纸，对象是实物</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section id="configs-py">
+                <h2>四、常量管理 configs.py</h2>
+                <p>
+                    把所有「魔法数字」集中到一个文件里管理，是良好编程习惯的体现。
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="file-path">src/configs.py（节选）</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code><span class="comment"># 颜色常量：RGB 三元组</span>
+<span class="keyword">class</span> <span class="class-name">Colors</span>:
+    WHITE = (<span class="number">255</span>, <span class="number">255</span>, <span class="number">255</span>)    <span class="comment"># 红=255, 绿=255, 蓝=255 → 白色</span>
+    BLACK = (<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>)          <span class="comment"># 全是 0 → 黑色</span>
+    WALL_BLUE = (<span class="number">24</span>, <span class="number">24</span>, <span class="number">217</span>)  <span class="comment"># 墙壁蓝色</span>
+    YELLOW = (<span class="number">252</span>, <span class="number">186</span>, <span class="number">3</span>)     <span class="comment"># 能量豆黄色</span>
+
+<span class="comment"># 窗口尺寸</span>
+SCREEN_WIDTH = <span class="number">1024</span>
+SCREEN_HEIGHT = <span class="number">768</span>
+
+<span class="comment"># 游戏参数</span>
+CELL_SIZE = (<span class="number">20</span>, <span class="number">20</span>)     <span class="comment"># 每格 20×20 像素</span>
+PACMAN_SPEED = <span class="number">4</span>          <span class="comment"># 吃豆人每帧走 4 像素</span>
+DOT_POINT = <span class="number">10</span>            <span class="comment"># 吃一颗普通豆得 10 分</span>
+
+<span class="comment"># 幽灵配置字典</span>
+GHOST_DELAYS = {
+    <span class="string">"blinky"</span>: <span class="number">4000</span>,   <span class="comment"># 红鬼 4 秒后出鬼屋</span>
+    <span class="string">"pinky"</span>: <span class="number">8000</span>,    <span class="comment"># 粉鬼 8 秒</span>
+    <span class="string">"inky"</span>: <span class="number">12000</span>,    <span class="comment"># 青鬼 12 秒</span>
+    <span class="string">"clyde"</span>: <span class="number">16000</span>,   <span class="comment"># 橙鬼 16 秒</span>
+}</code></pre>
+                </div>
+
+                <h3>为什么用类来存常量？</h3>
+                <div class="info-box">
+                    <strong>命名空间隔离：</strong>使用 <code>Colors.WHITE</code> 而不是直接 <code>WHITE</code>，
+                    可以避免与其他模块的同名变量冲突。类在这里只当作「容器」使用，不需要实例化。
+                </div>
+            </section>
+
+            <section id="runner-py">
+                <h2>五、主循环 runner.py</h2>
+                <p>
+                    所有游戏都有一个「永远在转」的主循环，这是游戏编程的核心模式。
+                </p>
+
+                <h3>主循环流程图</h3>
+                <div class="diagram-container">
+                    <svg viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+                        <ellipse cx="400" cy="40" rx="80" ry="30" fill="#1f5a4a" stroke="#b87333" stroke-width="2"/>
+                        <text x="400" y="45" text-anchor="middle" fill="white" font-size="13" font-weight="600">游戏开始</text>
+                        
+                        <line x1="400" y1="70" x2="400" y2="100" stroke="#1f5a4a" stroke-width="2" marker-end="url(#arrow2)"/>
+                        
+                        <rect x="300" y="100" width="200" height="50" rx="8" fill="#b87333" stroke="#1f5a4a" stroke-width="2"/>
+                        <text x="400" y="125" text-anchor="middle" fill="white" font-size="12" font-weight="600">while running:</text>
+                        <text x="400" y="142" text-anchor="middle" fill="white" font-size="10">主循环开始</text>
+                        
+                        <line x1="400" y1="150" x2="400" y2="180" stroke="#1f5a4a" stroke-width="2" marker-end="url(#arrow2)"/>
+                        
+                        <rect x="280" y="180" width="240" height="40" rx="6" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="1.5"/>
+                        <text x="400" y="205" text-anchor="middle" fill="#1a1d24" font-size="12">① 处理事件 (event handling)</text>
+                        
+                        <line x1="400" y1="220" x2="400" y2="240" stroke="#1f5a4a" stroke-width="2" marker-end="url(#arrow2)"/>
+                        
+                        <rect x="280" y="240" width="240" height="40" rx="6" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="1.5"/>
+                        <text x="400" y="265" text-anchor="middle" fill="#1a1d24" font-size="12">② 清屏 (screen.fill)</text>
+                        
+                        <line x1="400" y1="280" x2="400" y2="300" stroke="#1f5a4a" stroke-width="2" marker-end="url(#arrow2)"/>
+                        
+                        <rect x="280" y="300" width="240" height="40" rx="6" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="1.5"/>
+                        <text x="400" y="325" text-anchor="middle" fill="#1a1d24" font-size="12">③ 绘制画面 (draw)</text>
+                        
+                        <line x1="400" y1="340" x2="400" y2="360" stroke="#1f5a4a" stroke-width="2" marker-end="url(#arrow2)"/>
+                        
+                        <rect x="280" y="360" width="240" height="40" rx="6" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="1.5"/>
+                        <text x="400" y="385" text-anchor="middle" fill="#1a1d24" font-size="12">④ 更新状态 (update)</text>
+                        
+                        <line x1="400" y1="400" x2="400" y2="420" stroke="#1f5a4a" stroke-width="2" marker-end="url(#arrow2)"/>
+                        
+                        <rect x="280" y="420" width="240" height="40" rx="6" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="1.5"/>
+                        <text x="400" y="445" text-anchor="middle" fill="#1a1d24" font-size="12">⑤ 刷新显示 (flip)</text>
+                        
+                        <path d="M 520 440 L 600 440 L 600 125 L 500 125" fill="none" stroke="#b87333" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow2)"/>
+                        <text x="620" y="280" fill="#4a5568" font-size="11" font-style="italic">循环</text>
+                        
+                        <line x1="400" y1="460" x2="400" y2="480" stroke="#1f5a4a" stroke-width="2" marker-end="url(#arrow2)"/>
+                        <rect x="340" y="480" width="120" height="35" rx="6" fill="#1f5a4a" stroke="#b87333" stroke-width="2"/>
+                        <text x="400" y="502" text-anchor="middle" fill="white" font-size="12" font-weight="600">保存并退出</text>
+                        
+                        <defs>
+                            <marker id="arrow2" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="#1f5a4a"/>
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="file-path">src/runner.py（主循环核心代码）</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code><span class="keyword">def</span> <span class="function">main</span>(self):
+    clock = pygame.time.Clock()
+    dt = <span class="keyword">None</span>
+
+    <span class="keyword">while</span> self.game_state.running:
+        <span class="comment"># ① 处理事件</span>
+        <span class="keyword">for</span> event <span class="keyword">in</span> pygame.event.get():
+            self.events.handle_events(event)
+
+        <span class="comment"># ② 清屏（涂黑）</span>
+        self.screen.fill(Colors.BLACK)
+
+        <span class="comment"># ③ 绘制迷宫和分数</span>
+        self.gui.draw_screens()
+
+        <span class="comment"># ④ 绘制精灵（吃豆人、幽灵）</span>
+        self.all_sprites.draw(self.screen)
+
+        <span class="comment"># ⑤ 更新精灵状态</span>
+        self.all_sprites.update(dt)
+
+        <span class="comment"># ⑥ 刷新显示</span>
+        pygame.display.flip()
+
+        <span class="comment"># ⑦ 控制帧率（60 FPS）</span>
+        dt = clock.tick(self.game_state.fps)
+        dt /= <span class="number">100</span></code></pre>
+                </div>
+            </section>
+
+            <section id="state-py">
+                <h2>六、状态机 state_management.py</h2>
+                <p>
+                    GameState 是整个游戏的「数据中心」，所有可变状态都集中在这里管理。
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="file-path">src/game/state_management.py（@property 封装）</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code><span class="keyword">class</span> <span class="class-name">GameState</span>:
+    <span class="keyword">def</span> <span class="function">__init__</span>(self):
+        self.__level = <span class="number">1</span>
+        self.__running = <span class="keyword">True</span>
+        self.__direction = <span class="string">""</span>
+        self._points = -DOT_POINT
+
+    <span class="decorator">@property</span>
+    <span class="keyword">def</span> <span class="function">points</span>(self):
+        <span class="string">"""读分数"""</span>
+        <span class="keyword">return</span> self._points
+
+    <span class="decorator">@points.setter</span>
+    <span class="keyword">def</span> <span class="function">points</span>(self, val):
+        <span class="string">"""写分数"""</span>
+        self._points = val
+
+    <span class="decorator">@property</span>
+    <span class="keyword">def</span> <span class="function">direction</span>(self):
+        <span class="keyword">return</span> self.__direction
+
+    <span class="decorator">@direction.setter</span>
+    <span class="keyword">def</span> <span class="function">direction</span>(self, value):
+        <span class="keyword">if</span> value <span class="keyword">not</span> <span class="keyword">in</span> [<span class="string">"r"</span>, <span class="string">"l"</span>, <span class="string">"u"</span>, <span class="string">"d"</span>, <span class="string">""</span>]:
+            <span class="keyword">raise</span> ValueError(<span class="string">"Unknown direction"</span>)
+        self.__direction = value</code></pre>
+                </div>
+
+                <div class="info-box tip">
+                    <strong>@property 的好处：</strong>外部代码可以像访问变量一样读写属性
+                    （<code>game_state.points = 100</code>），但实际上会经过 getter/setter 方法。
+                    这样可以在赋值时加入校验逻辑，防止写入非法值。
+                </div>
+            </section>
+
+            <section id="event-py">
+                <h2>七、事件处理 event_management.py</h2>
+                <p>
+                    EventHandler 负责把玩家的键盘输入转换成 GameState 的状态变化。
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="file-path">src/game/event_management.py</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code><span class="keyword">class</span> <span class="class-name">EventHandler</span>:
+    <span class="keyword">def</span> <span class="function">handle_events</span>(self, event):
+        <span class="keyword">if</span> event.type == QUIT:
+            self.pygame_quit()
+
+        <span class="keyword">if</span> event.type == KEYDOWN:
+            self.key_bindings(event.key)
+
+    <span class="keyword">def</span> <span class="function">key_bindings</span>(self, key):
+        <span class="keyword">if</span> key == K_LEFT:
+            self._game_screen.direction = <span class="string">"l"</span>
+        <span class="keyword">elif</span> key == K_RIGHT:
+            self._game_screen.direction = <span class="string">"r"</span>
+        <span class="keyword">elif</span> key == K_UP:
+            self._game_screen.direction = <span class="string">"u"</span>
+        <span class="keyword">elif</span> key == K_DOWN:
+            self._game_screen.direction = <span class="string">"d"</span></code></pre>
+                </div>
+            </section>
+
+            <section id="grid-py">
+                <h2>八、关卡系统深度解析</h2>
+                <p>
+                    <strong>这是整个游戏最让人头疼的部分</strong>，但也是最有价值的学习材料。
+                    我们将从 JSON 文件结构开始，一步步追踪数据如何从文件变成屏幕上的画面。
+                </p>
+
+                <div class="info-box tip">
+                    <strong>学习路线：</strong>JSON 结构 → 加载流程 → 坐标转换 → 渲染管线 → 策略模式。
+                    建议对照 <code>levels/level1.json</code> 和 <code>src/gui/pacman_grid.py</code> 一起阅读。
+                </div>
+
+                <h3>8.1 JSON 关卡文件结构</h3>
+                <p>
+                    每个关卡都存储在一个 JSON 文件中（如 <code>levels/level1.json</code>）。
+                    让我们先看一个简化的结构示例：
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="file-path">levels/level1.json（简化版）</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code>{
+  <span class="string">"matrix"</span>: [
+    [<span class="string">"wall"</span>, <span class="string">"wall"</span>, <span class="string">"wall"</span>, ..., <span class="string">"wall"</span>],  <span class="comment">// 第 0 行：35 个格子</span>
+    [<span class="string">"wall"</span>, <span class="string">"power"</span>, <span class="string">"dot"</span>, ..., <span class="string">"wall"</span>],  <span class="comment">// 第 1 行</span>
+    [<span class="string">"wall"</span>, <span class="string">"dot"</span>, <span class="string">"void"</span>, ..., <span class="string">"wall"</span>],   <span class="comment">// 第 2 行</span>
+    ...
+    [<span class="string">"wall"</span>, <span class="string">"wall"</span>, <span class="string">"wall"</span>, ..., <span class="string">"wall"</span>]   <span class="comment">// 第 31 行</span>
+  ],
+  <span class="string">"pacman_start"</span>: [<span class="number">17</span>, <span class="number">16</span>],              <span class="comment">// 吃豆人出生位置 [行, 列]</span>
+  <span class="string">"ghost_den"</span>: [<span class="number">14</span>, <span class="number">15</span>],                 <span class="comment">// 幽灵巢穴位置 [行, 列]</span>
+  <span class="string">"scatter_times"</span>: [<span class="number">4</span>, <span class="number">20</span>, <span class="number">3</span>, <span class="number">20</span>, <span class="number">3</span>],     <span class="comment">// 散开/追逐模式切换时间（秒）</span>
+  <span class="string">"power_up_time"</span>: <span class="number">6000</span>,                <span class="comment">// 能量豆效果持续时间（毫秒）</span>
+  <span class="string">"num_rows"</span>: <span class="number">32</span>,                        <span class="comment">// 矩阵行数</span>
+  <span class="string">"num_cols"</span>: <span class="number">35</span>,                        <span class="comment">// 矩阵列数</span>
+  <span class="string">"cell_width"</span>: <span class="number">20</span>,                      <span class="comment">// 每格宽度（像素）</span>
+  <span class="string">"cell_height"</span>: <span class="number">20</span>                      <span class="comment">// 每格高度（像素）</span>
+}</code></pre>
+                </div>
+
+                <h4>矩阵单元类型说明</h4>
+                <table style="width: 100%; border-collapse: collapse; margin: 1em 0;">
+                    <thead>
+                        <tr style="background: var(--accent-green); color: white;">
+                            <th style="padding: 0.8em; text-align: left;">类型</th>
+                            <th style="padding: 0.8em; text-align: left;">含义</th>
+                            <th style="padding: 0.8em; text-align: left;">渲染效果</th>
+                            <th style="padding: 0.8em; text-align: left;">可通行</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom: 1px solid var(--border-light);">
+                            <td style="padding: 0.8em;"><code>"wall"</code></td>
+                            <td style="padding: 0.8em;">墙壁</td>
+                            <td style="padding: 0.8em;">蓝色实心矩形</td>
+                            <td style="padding: 0.8em;">❌ 不可通行</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border-light);">
+                            <td style="padding: 0.8em;"><code>"dot"</code></td>
+                            <td style="padding: 0.8em;">小豆豆</td>
+                            <td style="padding: 0.8em;">5×5 白色方块</td>
+                            <td style="padding: 0.8em;">✅ 可通行，吃掉后变 void</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border-light);">
+                            <td style="padding: 0.8em;"><code>"power"</code></td>
+                            <td style="padding: 0.8em;">能量豆</td>
+                            <td style="padding: 0.8em;">黄色大圆（半径 7）</td>
+                            <td style="padding: 0.8em;">✅ 可通行，触发幽灵恐慌</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border-light);">
+                            <td style="padding: 0.8em;"><code>"void"</code></td>
+                            <td style="padding: 0.8em;">空地</td>
+                            <td style="padding: 0.8em;">不绘制（显示黑底）</td>
+                            <td style="padding: 0.8em;">✅ 可通行</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border-light);">
+                            <td style="padding: 0.8em;"><code>"null"</code></td>
+                            <td style="padding: 0.8em;">空白区域</td>
+                            <td style="padding: 0.8em;">不绘制</td>
+                            <td style="padding: 0.8em;">❌ 迷宫外区域</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0.8em;"><code>"elec"</code></td>
+                            <td style="padding: 0.8em;">电力门</td>
+                            <td style="padding: 0.8em;">1 像素高红色横条</td>
+                            <td style="padding: 0.8em;">❌ 阻止幽灵通行</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>8.2 矩阵可视化：从数据到画面</h3>
+                <p>
+                    下面的图示展示了 JSON 矩阵（32 行 × 35 列）如何映射到屏幕。
+                    注意吃豆人出生点 <code>[17, 16]</code> 表示第 17 行、第 16 列（从 0 开始计数）。
+                </p>
+
+                <div class="diagram-container">
+                    <svg viewBox="0 0 900 500" xmlns="http://www.w3.org/2000/svg">
+                        <!-- 左侧：JSON 矩阵示意 -->
+                        <text x="50" y="30" fill="#1a1d24" font-size="14" font-weight="600">JSON 矩阵（32×35）</text>
+                        <rect x="50" y="50" width="350" height="400" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="2" rx="4"/>
+                        
+                        <!-- 矩阵网格线 -->
+                        <g stroke="#e2e8f0" stroke-width="0.5">
+                            <line x1="50" y1="70" x2="400" y2="70"/>
+                            <line x1="50" y1="90" x2="400" y2="90"/>
+                            <line x1="50" y1="110" x2="400" y2="110"/>
+                            <line x1="50" y1="130" x2="400" y2="130"/>
+                            <line x1="50" y1="150" x2="400" y2="150"/>
+                            <line x1="50" y1="170" x2="400" y2="170"/>
+                            <line x1="50" y1="190" x2="400" y2="190"/>
+                            <line x1="50" y1="210" x2="400" y2="210"/>
+                            <line x1="50" y1="230" x2="400" y2="230"/>
+                            <line x1="50" y1="250" x2="400" y2="250"/>
+                        </g>
+                        
+                        <!-- 行号 -->
+                        <text x="40" y="65" text-anchor="end" fill="#4a5568" font-size="10">0</text>
+                        <text x="40" y="85" text-anchor="end" fill="#4a5568" font-size="10">1</text>
+                        <text x="40" y="105" text-anchor="end" fill="#4a5568" font-size="10">2</text>
+                        <text x="40" y="125" text-anchor="end" fill="#4a5568" font-size="10">3</text>
+                        <text x="40" y="145" text-anchor="end" fill="#4a5568" font-size="10">4</text>
+                        <text x="40" y="165" text-anchor="end" fill="#4a5568" font-size="10">5</text>
+                        <text x="40" y="185" text-anchor="end" fill="#4a5568" font-size="10">...</text>
+                        <text x="40" y="245" text-anchor="end" fill="#4a5568" font-size="10">17</text>
+                        
+                        <!-- 第 0 行：全墙 -->
+                        <g fill="#2d2d8a">
+                            <rect x="50" y="50" width="10" height="20"/>
+                            <rect x="60" y="50" width="10" height="20"/>
+                            <rect x="70" y="50" width="10" height="20"/>
+                            <rect x="80" y="50" width="10" height="20"/>
+                            <rect x="90" y="50" width="10" height="20"/>
+                            <rect x="100" y="50" width="10" height="20"/>
+                            <rect x="110" y="50" width="10" height="20"/>
+                            <rect x="120" y="50" width="10" height="20"/>
+                            <rect x="130" y="50" width="10" height="20"/>
+                            <rect x="140" y="50" width="10" height="20"/>
+                            <rect x="150" y="50" width="10" height="20"/>
+                            <rect x="160" y="50" width="10" height="20"/>
+                            <rect x="170" y="50" width="10" height="20"/>
+                            <rect x="180" y="50" width="10" height="20"/>
+                            <rect x="190" y="50" width="10" height="20"/>
+                            <rect x="200" y="50" width="10" height="20"/>
+                            <rect x="210" y="50" width="10" height="20"/>
+                            <rect x="220" y="50" width="10" height="20"/>
+                            <rect x="230" y="50" width="10" height="20"/>
+                            <rect x="240" y="50" width="10" height="20"/>
+                            <rect x="250" y="50" width="10" height="20"/>
+                            <rect x="260" y="50" width="10" height="20"/>
+                            <rect x="270" y="50" width="10" height="20"/>
+                            <rect x="280" y="50" width="10" height="20"/>
+                            <rect x="290" y="50" width="10" height="20"/>
+                            <rect x="300" y="50" width="10" height="20"/>
+                            <rect x="310" y="50" width="10" height="20"/>
+                            <rect x="320" y="50" width="10" height="20"/>
+                            <rect x="330" y="50" width="10" height="20"/>
+                            <rect x="340" y="50" width="10" height="20"/>
+                            <rect x="350" y="50" width="10" height="20"/>
+                            <rect x="360" y="50" width="10" height="20"/>
+                            <rect x="370" y="50" width="10" height="20"/>
+                            <rect x="380" y="50" width="10" height="20"/>
+                            <rect x="390" y="50" width="10" height="20"/>
+                        </g>
+                        
+                        <!-- 第 1 行：墙+能量豆+豆子 -->
+                        <rect x="50" y="70" width="10" height="20" fill="#2d2d8a"/>
+                        <circle cx="65" cy="80" r="5" fill="#b87333"/>
+                        <rect x="75" y="75" width="5" height="5" fill="white"/>
+                        <rect x="85" y="75" width="5" height="5" fill="white"/>
+                        <rect x="95" y="75" width="5" height="5" fill="white"/>
+                        <rect x="105" y="75" width="5" height="5" fill="white"/>
+                        <rect x="115" y="75" width="5" height="5" fill="white"/>
+                        <rect x="125" y="75" width="5" height="5" fill="white"/>
+                        <rect x="135" y="75" width="5" height="5" fill="white"/>
+                        <rect x="145" y="75" width="5" height="5" fill="white"/>
+                        <rect x="155" y="75" width="5" height="5" fill="white"/>
+                        <rect x="165" y="75" width="5" height="5" fill="white"/>
+                        <rect x="175" y="75" width="5" height="5" fill="white"/>
+                        <rect x="185" y="75" width="5" height="5" fill="white"/>
+                        <rect x="195" y="75" width="5" height="5" fill="white"/>
+                        <rect x="390" y="70" width="10" height="20" fill="#2d2d8a"/>
+                        
+                        <!-- 第 17 行：吃豆人出生点高亮 -->
+                        <rect x="50" y="230" width="350" height="20" fill="#fff3cd" opacity="0.3"/>
+                        <rect x="210" y="230" width="20" height="20" fill="#ff6b6b" opacity="0.6"/>
+                        <text x="220" y="245" text-anchor="middle" fill="#1a1d24" font-size="10" font-weight="600">P</text>
+                        
+                        <!-- 标注 -->
+                        <line x1="230" y1="240" x2="280" y2="240" stroke="#b87333" stroke-width="1.5" marker-end="url(#arrow5)"/>
+                        <text x="285" y="245" fill="#b87333" font-size="11" font-weight="600">pacman_start [17, 16]</text>
+                        
+                        <!-- 右侧：屏幕渲染结果 -->
+                        <text x="500" y="30" fill="#1a1d24" font-size="14" font-weight="600">屏幕渲染结果</text>
+                        <rect x="500" y="50" width="350" height="400" fill="black" stroke="#1f5a4a" stroke-width="2" rx="4"/>
+                        
+                        <!-- 渲染的墙壁 -->
+                        <g fill="#2d2d8a">
+                            <rect x="500" y="50" width="350" height="20"/>
+                            <rect x="500" y="70" width="10" height="20"/>
+                            <rect x="840" y="70" width="10" height="20"/>
+                        </g>
+                        
+                        <!-- 渲染的豆子 -->
+                        <g fill="white">
+                            <rect x="525" y="75" width="5" height="5"/>
+                            <rect x="535" y="75" width="5" height="5"/>
+                            <rect x="545" y="75" width="5" height="5"/>
+                            <rect x="555" y="75" width="5" height="5"/>
+                            <rect x="565" y="75" width="5" height="5"/>
+                            <rect x="575" y="75" width="5" height="5"/>
+                            <rect x="585" y="75" width="5" height="5"/>
+                            <rect x="595" y="75" width="5" height="5"/>
+                            <rect x="605" y="75" width="5" height="5"/>
+                            <rect x="615" y="75" width="5" height="5"/>
+                            <rect x="625" y="75" width="5" height="5"/>
+                            <rect x="635" y="75" width="5" height="5"/>
+                            <rect x="645" y="75" width="5" height="5"/>
+                            <rect x="655" y="75" width="5" height="5"/>
+                        </g>
+                        
+                        <!-- 能量豆 -->
+                        <circle cx="515" cy="80" r="7" fill="#b87333"/>
+                        
+                        <!-- 吃豆人位置 -->
+                        <circle cx="675" cy="240" r="8" fill="#ffff00"/>
+                        <text x="675" y="260" text-anchor="middle" fill="#ffff00" font-size="10">吃豆人</text>
+                        
+                        <!-- 箭头连接 -->
+                        <line x1="420" y1="150" x2="480" y2="150" stroke="#b87333" stroke-width="3" marker-end="url(#arrow5)"/>
+                        <text x="450" y="140" text-anchor="middle" fill="#b87333" font-size="12" font-weight="600">渲染</text>
+                        
+                        <defs>
+                            <marker id="arrow5" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="#b87333"/>
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+
+                <h3>8.3 加载流程详解</h3>
+                <p>
+                    关卡加载分为三个阶段：<strong>读取 JSON</strong> → <strong>解析数据</strong> → <strong>初始化对象</strong>。
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="file-path">src/gui/pacman_grid.py - load_level() 方法</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code><span class="keyword">def</span> <span class="function">load_level</span>(self, level_number):
+    <span class="comment"># 阶段 1：读取 JSON 文件</span>
+    level_path = <span class="string">f"levels/level{level_number}.json"</span>
+    level_json = self.get_json(level_path)  <span class="comment"># json.load(fp)</span>
+    
+    <span class="comment"># 阶段 2：解析关键字段</span>
+    num_rows = level_json[<span class="string">"num_rows"</span>]           <span class="comment"># 32</span>
+    num_cols = level_json[<span class="string">"num_cols"</span>]           <span class="comment"># 35</span>
+    self.ghost_den = level_json[<span class="string">'ghost_den'</span>]     <span class="comment"># [14, 15]</span>
+    self._matrix = level_json[<span class="string">"matrix"</span>]          <span class="comment"># 32×35 二维列表</span>
+    self._pacman_pos = level_json[<span class="string">"pacman_start"</span>] <span class="comment"># [17, 16]</span>
+    self.mode_change_times = level_json[<span class="string">'scatter_times'</span>]
+    self.power_up_time = level_json[<span class="string">'power_up_time'</span>]
+    
+    <span class="comment"># 阶段 3：写入 GameState 供其他模块读取</span>
+    self._game_state.scared_time = self.power_up_time
+    self._game_state.mode_change_events = self.mode_change_times
+    
+    <span class="comment"># 阶段 4：计算屏幕居中偏移</span>
+    self.start_x, self.start_y = place_elements_offset(
+        SCREEN_WIDTH, SCREEN_HEIGHT,
+        CELL_SIZE[<span class="number">0</span>] * num_cols,  <span class="comment"># 迷宫总宽度 = 20 × 35 = 700px</span>
+        CELL_SIZE[<span class="number">0</span>] * num_rows,  <span class="comment"># 迷宫总高度 = 20 × 32 = 640px</span>
+        <span class="number">0.5</span>, <span class="number">0.5</span>  <span class="comment"># 居中锚点</span>
+    )
+    
+    <span class="comment"># 阶段 5：预计算坐标矩阵（优化性能）</span>
+    self._coord_matrix = precompute_matrix_coords(
+        self.start_x, self.start_y, CELL_SIZE[<span class="number">0</span>], num_rows, num_cols
+    )</code></pre>
+                </div>
+
+                <h3>8.4 坐标转换：逻辑格 → 屏幕像素</h3>
+                <p>
+                    这是最容易混淆的部分。游戏使用两套坐标系：
+                </p>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5em; margin: 1.5em 0;">
+                    <div class="info-box">
+                        <h4 style="margin-top: 0;">逻辑坐标系（矩阵索引）</h4>
+                        <ul style="margin: 0.5em 0; padding-left: 1.5em;">
+                            <li>原点：左上角 <code>[0, 0]</code></li>
+                            <li>单位：格子（cell）</li>
+                            <li>范围：<code>[0~31, 0~34]</code></li>
+                            <li>用途：JSON 存储、AI 寻路、碰撞检测</li>
+                        </ul>
+                    </div>
+                    <div class="info-box">
+                        <h4 style="margin-top: 0;">屏幕坐标系（像素）</h4>
+                        <ul style="margin: 0.5em 0; padding-left: 1.5em;">
+                            <li>原点：窗口左上角 <code>(0, 0)</code></li>
+                            <li>单位：像素（pixel）</li>
+                            <li>范围：<code>[0~1023, 0~767]</code></li>
+                            <li>用途：渲染绘制、精灵位置</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="file-path">坐标转换公式</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code><span class="comment"># 从逻辑坐标 (row, col) 转换为屏幕像素 (x, y)</span>
+pixel_x = start_x + col * CELL_SIZE[<span class="number">0</span>]
+pixel_y = start_y + row * CELL_SIZE[<span class="number">0</span>]
+
+<span class="comment"># 示例：吃豆人出生点 [17, 16]</span>
+start_x = <span class="number">162</span>  <span class="comment"># 居中偏移（1024 - 700）/ 2</span>
+start_y = <span class="number">64</span>   <span class="comment"># 居中偏移（768 - 640）/ 2</span>
+CELL_SIZE = <span class="number">20</span>  <span class="comment"># 每格 20 像素</span>
+
+pacman_x = <span class="number">162</span> + <span class="number">16</span> * <span class="number">20</span> = <span class="number">482</span>  <span class="comment"># 屏幕 x 坐标</span>
+pacman_y = <span class="number">64</span> + <span class="number">17</span> * <span class="number">20</span> = <span class="number">404</span>  <span class="comment"># 屏幕 y 坐标</span></code></pre>
+                </div>
+
+                <h3>8.5 渲染管线：draw_level() 详解</h3>
+                <p>
+                    渲染使用<strong>策略模式</strong>（Strategy Pattern）：通过字典 <code>function_mapper</code> 
+                    将单元类型映射到对应的绘制方法，避免冗长的 if-elif 链。
+                </p>
+
+                <div class="diagram-container">
+                    <svg viewBox="0 0 900 350" xmlns="http://www.w3.org/2000/svg">
+                        <!-- 输入：matrix 单元格 -->
+                        <rect x="50" y="120" width="120" height="60" rx="8" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="2"/>
+                        <text x="110" y="145" text-anchor="middle" fill="#1a1d24" font-size="12" font-weight="600">matrix[row][col]</text>
+                        <text x="110" y="165" text-anchor="middle" fill="#4a5568" font-size="11" font-family="monospace">"wall"</text>
+                        
+                        <!-- 箭头 -->
+                        <line x1="170" y1="150" x2="230" y2="150" stroke="#b87333" stroke-width="2" marker-end="url(#arrow6)"/>
+                        <text x="200" y="140" text-anchor="middle" fill="#4a5568" font-size="10">查表</text>
+                        
+                        <!-- function_mapper -->
+                        <rect x="230" y="80" width="200" height="140" rx="8" fill="#1f5a4a" stroke="#b87333" stroke-width="3"/>
+                        <text x="330" y="105" text-anchor="middle" fill="white" font-size="13" font-weight="600">function_mapper</text>
+                        <text x="250" y="130" fill="white" font-size="10" font-family="monospace">"wall" → draw_wall</text>
+                        <text x="250" y="150" fill="white" font-size="10" font-family="monospace">"dot"  → draw_dot</text>
+                        <text x="250" y="170" fill="white" font-size="10" font-family="monospace">"power"→ draw_power</text>
+                        <text x="250" y="190" fill="white" font-size="10" font-family="monospace">"void" → draw_void</text>
+                        
+                        <!-- 箭头 -->
+                        <line x1="430" y1="150" x2="490" y2="150" stroke="#b87333" stroke-width="2" marker-end="url(#arrow6)"/>
+                        <text x="460" y="140" text-anchor="middle" fill="#4a5568" font-size="10">调用</text>
+                        
+                        <!-- 绘制方法 -->
+                        <rect x="490" y="100" width="140" height="100" rx="8" fill="#b87333" stroke="#1f5a4a" stroke-width="2"/>
+                        <text x="560" y="125" text-anchor="middle" fill="white" font-size="12" font-weight="600">draw_wall()</text>
+                        <text x="560" y="145" text-anchor="middle" fill="white" font-size="10">draw_rect(</text>
+                        <text x="560" y="160" text-anchor="middle" fill="white" font-size="10">  x, y, w, h,</text>
+                        <text x="560" y="175" text-anchor="middle" fill="white" font-size="10">  WALL_BLUE)</text>
+                        
+                        <!-- 箭头 -->
+                        <line x1="630" y1="150" x2="690" y2="150" stroke="#b87333" stroke-width="2" marker-end="url(#arrow6)"/>
+                        <text x="660" y="140" text-anchor="middle" fill="#4a5568" font-size="10">绘制</text>
+                        
+                        <!-- 输出：屏幕像素 -->
+                        <rect x="690" y="120" width="160" height="60" rx="8" fill="#2d2d8a" stroke="#1f5a4a" stroke-width="2"/>
+                        <text x="770" y="145" text-anchor="middle" fill="white" font-size="12" font-weight="600">屏幕像素</text>
+                        <text x="770" y="165" text-anchor="middle" fill="white" font-size="10">蓝色实心矩形</text>
+                        
+                        <defs>
+                            <marker id="arrow6" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="#b87333"/>
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="file-path">src/gui/pacman_grid.py - draw_level() 双重循环</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code><span class="keyword">def</span> <span class="function">draw_level</span>(self):
+    curr_x, curr_y = self.start_x, self.start_y
+    
+    <span class="comment"># 外层循环：遍历每一行</span>
+    <span class="keyword">for</span> row_idx, row <span class="keyword">in</span> enumerate(self._matrix):
+        <span class="comment"># 内层循环：遍历每一列</span>
+        <span class="keyword">for</span> col_idx, cell_type <span class="keyword">in</span> enumerate(row):
+            <span class="comment"># 策略模式：查表获取绘制函数</span>
+            draw_func = self.function_mapper[cell_type]
+            
+            <span class="comment"># 调用绘制方法，传入像素坐标和格子尺寸</span>
+            draw_func(
+                x=curr_x, 
+                y=curr_y, 
+                w=CELL_SIZE[<span class="number">0</span>],  <span class="comment"># 20 像素</span>
+                h=CELL_SIZE[<span class="number">0</span>]   <span class="comment"># 20 像素</span>
+            )
+            
+            <span class="comment"># 向右移动一格</span>
+            curr_x += CELL_SIZE[<span class="number">0</span>]
+        
+        <span class="comment"># 换行：x 回到行首，y 下移一格</span>
+        curr_x = self.start_x
+        curr_y += CELL_SIZE[<span class="number">0</span>]</code></pre>
+                </div>
+
+                <h3>8.6 策略模式的优势</h3>
+                <p>
+                    使用 <code>function_mapper</code> 字典而非 if-elif 链的好处：
+                </p>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5em; margin: 1.5em 0;">
+                    <div class="code-block" style="margin: 0;">
+                        <div class="code-header">
+                            <span class="file-path">❌ 传统 if-elif 方式</span>
+                        </div>
+                        <pre><code><span class="keyword">if</span> cell == <span class="string">"wall"</span>:
+    draw_wall(...)
+<span class="keyword">elif</span> cell == <span class="string">"dot"</span>:
+    draw_dot(...)
+<span class="keyword">elif</span> cell == <span class="string">"power"</span>:
+    draw_power(...)
+<span class="keyword">elif</span> cell == <span class="string">"void"</span>:
+    draw_void(...)
+<span class="keyword">elif</span> cell == <span class="string">"elec"</span>:
+    draw_elec(...)
+<span class="comment"># 新增类型需修改此处</span></code></pre>
+                    </div>
+                    <div class="code-block" style="margin: 0;">
+                        <div class="code-header">
+                            <span class="file-path">✅ 策略模式（本项目采用）</span>
+                        </div>
+                        <pre><code><span class="comment"># 初始化时建表</span>
+self.function_mapper = {
+    <span class="string">"wall"</span>: self.draw_wall,
+    <span class="string">"dot"</span>: self.draw_dot,
+    <span class="string">"power"</span>: self.draw_power,
+    <span class="string">"void"</span>: self.draw_void,
+    <span class="string">"elec"</span>: self.draw_elec,
+}
+
+<span class="comment"># 使用时一行搞定</span>
+draw_func = self.function_mapper[cell]
+draw_func(...)</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box tip">
+                    <strong>扩展性：</strong>如果要新增一种单元类型（比如 "teleport" 传送门），
+                    只需：① 在 JSON 中使用 <code>"teleport"</code>；② 实现 <code>draw_teleport()</code> 方法；
+                    ③ 在 <code>function_mapper</code> 中添加映射。无需修改 draw_level() 循环逻辑。
+                </div>
+
+                <h3>8.7 完整数据流总结</h3>
+                <div class="diagram-container">
+                    <svg viewBox="0 0 900 200" xmlns="http://www.w3.org/2000/svg">
+                        <!-- 1. JSON 文件 -->
+                        <rect x="20" y="60" width="120" height="80" rx="8" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="2"/>
+                        <text x="80" y="85" text-anchor="middle" fill="#1a1d24" font-size="11" font-weight="600">level1.json</text>
+                        <text x="80" y="105" text-anchor="middle" fill="#4a5568" font-size="9">matrix: 32×35</text>
+                        <text x="80" y="120" text-anchor="middle" fill="#4a5568" font-size="9">pacman_start</text>
+                        
+                        <!-- 箭头 -->
+                        <line x1="140" y1="100" x2="180" y2="100" stroke="#b87333" stroke-width="2" marker-end="url(#arrow7)"/>
+                        <text x="160" y="90" text-anchor="middle" fill="#4a5568" font-size="9">json.load</text>
+                        
+                        <!-- 2. Python 对象 -->
+                        <rect x="180" y="60" width="120" height="80" rx="8" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="2"/>
+                        <text x="240" y="85" text-anchor="middle" fill="#1a1d24" font-size="11" font-weight="600">Python dict</text>
+                        <text x="240" y="105" text-anchor="middle" fill="#4a5568" font-size="9">_matrix: list</text>
+                        <text x="240" y="120" text-anchor="middle" fill="#4a5568" font-size="9">_pacman_pos</text>
+                        
+                        <!-- 箭头 -->
+                        <line x1="300" y1="100" x2="340" y2="100" stroke="#b87333" stroke-width="2" marker-end="url(#arrow7)"/>
+                        <text x="320" y="90" text-anchor="middle" fill="#4a5568" font-size="9">坐标转换</text>
+                        
+                        <!-- 3. 坐标矩阵 -->
+                        <rect x="340" y="60" width="120" height="80" rx="8" fill="#1f5a4a" stroke="#b87333" stroke-width="2"/>
+                        <text x="400" y="85" text-anchor="middle" fill="white" font-size="11" font-weight="600">_coord_matrix</text>
+                        <text x="400" y="105" text-anchor="middle" fill="white" font-size="9">像素坐标缓存</text>
+                        <text x="400" y="120" text-anchor="middle" fill="white" font-size="9">start_x/y</text>
+                        
+                        <!-- 箭头 -->
+                        <line x1="460" y1="100" x2="500" y2="100" stroke="#b87333" stroke-width="2" marker-end="url(#arrow7)"/>
+                        <text x="480" y="90" text-anchor="middle" fill="#4a5568" font-size="9">每帧遍历</text>
+                        
+                        <!-- 4. 策略查表 -->
+                        <rect x="500" y="60" width="120" height="80" rx="8" fill="#b87333" stroke="#1f5a4a" stroke-width="2"/>
+                        <text x="560" y="85" text-anchor="middle" fill="white" font-size="11" font-weight="600">function_mapper</text>
+                        <text x="560" y="105" text-anchor="middle" fill="white" font-size="9">"wall"→draw_wall</text>
+                        <text x="560" y="120" text-anchor="middle" fill="white" font-size="9">"dot"→draw_dot</text>
+                        
+                        <!-- 箭头 -->
+                        <line x1="620" y1="100" x2="660" y2="100" stroke="#b87333" stroke-width="2" marker-end="url(#arrow7)"/>
+                        <text x="640" y="90" text-anchor="middle" fill="#4a5568" font-size="9">调用方法</text>
+                        
+                        <!-- 5. 屏幕渲染 -->
+                        <rect x="660" y="60" width="120" height="80" rx="8" fill="#2d2d8a" stroke="#1f5a4a" stroke-width="2"/>
+                        <text x="720" y="85" text-anchor="middle" fill="white" font-size="11" font-weight="600">screen.blit()</text>
+                        <text x="720" y="105" text-anchor="middle" fill="white" font-size="9">draw_rect/circle</text>
+                        <text x="720" y="120" text-anchor="middle" fill="white" font-size="9">像素绘制</text>
+                        
+                        <!-- 箭头 -->
+                        <line x1="780" y1="100" x2="820" y2="100" stroke="#b87333" stroke-width="2" marker-end="url(#arrow7)"/>
+                        <text x="800" y="90" text-anchor="middle" fill="#4a5568" font-size="9">display.flip</text>
+                        
+                        <!-- 6. 最终画面 -->
+                        <rect x="820" y="70" width="60" height="60" rx="4" fill="black" stroke="#1f5a4a" stroke-width="2"/>
+                        <rect x="825" y="75" width="10" height="10" fill="#2d2d8a"/>
+                        <circle cx="845" cy="80" r="2" fill="white"/>
+                        <circle cx="855" cy="80" r="2" fill="white"/>
+                        <rect x="865" y="75" width="10" height="10" fill="#2d2d8a"/>
+                        
+                        <defs>
+                            <marker id="arrow7" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="#b87333"/>
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+
+                <div class="info-box">
+                    <strong>性能优化：</strong>draw_level() 每帧都被调用（60fps），但由于使用预计算的 
+                    <code>_coord_matrix</code> 和策略模式查表，实际开销很小。32×35=1120 次循环在现代 CPU 上几乎无感。
+                    如果需要进一步优化，可以考虑只重绘变化的格子（脏矩形算法），但本项目未采用。
+                </div>
+
+                <h3>8.8 实战：修改关卡设计</h3>
+                <p>
+                    理解了整个流程后，你可以尝试修改 <code>levels/level1.json</code> 来创建自己的关卡：
+                </p>
+                <ol style="padding-left: 1.5em; line-height: 2;">
+                    <li>修改 <code>matrix</code> 数组中的字符串来改变墙壁、豆子的布局</li>
+                    <li>调整 <code>pacman_start</code> 改变吃豆人出生位置</li>
+                    <li>修改 <code>scatter_times</code> 调整幽灵 AI 模式切换频率</li>
+                    <li>运行游戏查看效果：<code>python main.py</code></li>
+                </ol>
+
+                <div class="info-box tip">
+                    <strong>调试技巧：</strong>在 <code>pacman_grid.py</code> 的 <code>draw_level()</code> 
+                    方法末尾添加 <code>self.draw_outliners()</code> 调用，可以看到绿色的调试网格线，
+                    帮助你理解坐标对齐情况。
+                </div>
+            </section>
+
+            <section id="pacman-py">
+                <h2>九、吃豆人 pacman.py</h2>
+                <p>
+                    Pacman 类继承自 pygame.sprite.Sprite，实现了移动、吃豆、动画等功能。
+                </p>
+
+                <h3>继承关系图</h3>
+                <div class="diagram-container">
+                    <svg viewBox="0 0 600 250" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="200" y="30" width="200" height="60" rx="8" fill="#1f5a4a" stroke="#b87333" stroke-width="2"/>
+                        <text x="300" y="55" text-anchor="middle" fill="white" font-size="14" font-weight="600">pygame.sprite.Sprite</text>
+                        <text x="300" y="75" text-anchor="middle" fill="white" font-size="10">提供 image, rect, update()</text>
+                        
+                        <line x1="300" y1="90" x2="300" y2="130" stroke="#b87333" stroke-width="2" marker-end="url(#arrow4)"/>
+                        <text x="320" y="115" fill="#4a5568" font-size="11" font-style="italic">继承</text>
+                        
+                        <rect x="150" y="130" width="300" height="100" rx="8" fill="#b87333" stroke="#1f5a4a" stroke-width="3"/>
+                        <text x="300" y="155" text-anchor="middle" fill="white" font-size="16" font-weight="700">Pacman</text>
+                        <text x="300" y="175" text-anchor="middle" fill="white" font-size="11">自有方法：</text>
+                        <text x="300" y="195" text-anchor="middle" fill="white" font-size="10" font-family="monospace">move_pacman(), eat_dots()</text>
+                        <text x="300" y="210" text-anchor="middle" fill="white" font-size="10" font-family="monospace">movement_bind(), update(dt)</text>
+                        
+                        <defs>
+                            <marker id="arrow4" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="#b87333"/>
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="file-path">src/sprites/pacman.py（核心方法）</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code><span class="keyword">class</span> <span class="class-name">Pacman</span>(Sprite):
+    <span class="keyword">def</span> <span class="function">update</span>(self, dt):
+        self.frame_update()
+        self.movement_bind()
+        self.move_pacman(dt)
+        self.eat_dots()
+        <span class="keyword">if</span> self.collectibles == <span class="number">0</span>:
+            self.game_state.level_complete = <span class="keyword">True</span>
+
+    <span class="keyword">def</span> <span class="function">eat_dots</span>(self):
+        r, c = get_idx_from_coords(self.rect.x, self.rect.y, ...)
+        <span class="keyword">if</span> self.matrix[r][c] == <span class="string">"dot"</span>:
+            self.matrix[r][c] = <span class="string">"void"</span>
+            self.game_state.points += DOT_POINT
+            self.collectibles -= <span class="number">1</span></code></pre>
+                </div>
+            </section>
+
+            <section id="ghosts-py">
+                <h2>十、幽灵 AI ghosts.py</h2>
+                <p>
+                    四只幽灵各自有不同的追逐策略，这是经典吃豆人游戏的核心玩法。
+                </p>
+
+                <h3>多态示意图</h3>
+                <div class="diagram-container">
+                    <svg viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="250" y="30" width="300" height="70" rx="8" fill="#1f5a4a" stroke="#b87333" stroke-width="2"/>
+                        <text x="400" y="55" text-anchor="middle" fill="white" font-size="14" font-weight="600">Ghost (抽象基类)</text>
+                        <text x="400" y="75" text-anchor="middle" fill="white" font-size="11" font-family="monospace">@abstractmethod determine_target()</text>
+                        <text x="400" y="90" text-anchor="middle" fill="white" font-size="10">子类必须实现这个方法</text>
+                        
+                        <line x1="300" y1="100" x2="150" y2="160" stroke="#b87333" stroke-width="2"/>
+                        <line x1="370" y1="100" x2="320" y2="160" stroke="#b87333" stroke-width="2"/>
+                        <line x1="430" y1="100" x2="480" y2="160" stroke="#b87333" stroke-width="2"/>
+                        <line x1="500" y1="100" x2="650" y2="160" stroke="#b87333" stroke-width="2"/>
+                        
+                        <rect x="50" y="160" width="200" height="100" rx="8" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="2"/>
+                        <text x="150" y="185" text-anchor="middle" fill="#1a1d24" font-size="13" font-weight="600">Blinky (红鬼)</text>
+                        <text x="150" y="210" text-anchor="middle" fill="#4a5568" font-size="11">策略：直接追吃豆人</text>
+                        <text x="150" y="235" text-anchor="middle" fill="#1f5a4a" font-size="10" font-family="monospace">target = pacman_pos</text>
+                        
+                        <rect x="270" y="160" width="200" height="100" rx="8" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="2"/>
+                        <text x="370" y="185" text-anchor="middle" fill="#1a1d24" font-size="13" font-weight="600">Pinky (粉鬼)</text>
+                        <text x="370" y="210" text-anchor="middle" fill="#4a5568" font-size="11">策略：埋伏前方 4 格</text>
+                        <text x="370" y="235" text-anchor="middle" fill="#1f5a4a" font-size="10" font-family="monospace">target = pacman_ahead(4)</text>
+                        
+                        <rect x="490" y="160" width="200" height="100" rx="8" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="2"/>
+                        <text x="590" y="185" text-anchor="middle" fill="#1a1d24" font-size="13" font-weight="600">Inky (青鬼)</text>
+                        <text x="590" y="210" text-anchor="middle" fill="#4a5568" font-size="11">策略：向量镜像</text>
+                        <text x="590" y="235" text-anchor="middle" fill="#1f5a4a" font-size="10" font-family="monospace">target = blinky + vec*2</text>
+                        
+                        <rect x="50" y="290" width="200" height="100" rx="8" fill="#f7f9fc" stroke="#1f5a4a" stroke-width="2"/>
+                        <text x="150" y="315" text-anchor="middle" fill="#1a1d24" font-size="13" font-weight="600">Clyde (橙鬼)</text>
+                        <text x="150" y="340" text-anchor="middle" fill="#4a5568" font-size="11">策略：胆小鬼</text>
+                        <text x="150" y="365" text-anchor="middle" fill="#1f5a4a" font-size="10" font-family="monospace">if dist>8: random</text>
+                        <text x="150" y="380" text-anchor="middle" fill="#1f5a4a" font-size="10" font-family="monospace">else: chase</text>
+                        
+                        <rect x="270" y="290" width="480" height="100" rx="8" fill="#fffbf0" stroke="#b87333" stroke-width="2"/>
+                        <text x="510" y="315" text-anchor="middle" fill="#1a1d24" font-size="12" font-weight="600">多态的好处</text>
+                        <text x="510" y="340" text-anchor="middle" fill="#4a5568" font-size="11">主循环只需要调用 ghost.determine_target()</text>
+                        <text x="510" y="360" text-anchor="middle" fill="#4a5568" font-size="11">不用关心具体是哪只鬼，每只鬼自动执行自己的策略</text>
+                        <text x="510" y="380" text-anchor="middle" fill="#4a5568" font-size="11">新增幽灵类型只需要写一个新的子类</text>
+                    </svg>
+                </div>
+
+                <h3>核心架构：策略模式 + 抽象基类</h3>
+                <p>
+                    所有幽灵都继承自 <code>Ghost</code> 基类，它使用了 <strong>ABC（抽象基类）</strong>和 
+                    <strong>@abstractmethod</strong> 装饰器，强制每只幽灵实现自己的追逐策略。
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="file-path">src/sprites/ghosts.py（抽象基类定义）</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code><span class="keyword">from</span> abc <span class="keyword">import</span> abstractmethod, ABC
+
+<span class="keyword">class</span> <span class="class-name">Ghost</span>(Sprite, ABC):
+    <span class="string">"""幽灵基类：图像、lerp 行走、scared 状态、碰撞"""</span>
+    
+    <span class="decorator">@abstractmethod</span>
+    <span class="keyword">def</span> <span class="function">determine_target</span>(self):
+        <span class="string">"""子类必须实现这个方法，返回追逐目标格子 (row, col)"""</span>
+        <span class="keyword">pass</span></code></pre>
+                </div>
+
+                <div class="info-box tip">
+                    <strong>Python 知识点：</strong>ABC（Abstract Base Class）+ @abstractmethod 是 Python 实现接口的方式。
+                    它确保子类必须实现特定方法，否则无法实例化该子类。这是设计模式中的"模板方法模式"。
+                </div>
+
+                <h3>Blinky（红色）：直接追踪</h3>
+                <p>
+                    最简单粗暴的策略：直接追吃豆人当前位置。Blinky 是玩家的"影子"，始终紧追不舍。
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="file-path">src/sprites/ghosts.py - Blinky 实现</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code><span class="keyword">class</span> <span class="class-name">Blinky</span>(Ghost):
+    <span class="string">"""红色 Blinky：最直接追逐"""</span>
+    
+    <span class="keyword">def</span> <span class="function">determine_target</span>(self):
+        mode = self._game_state.ghost_mode
+        
+        <span class="keyword">if</span> mode == <span class="string">"scatter"</span>:
+            <span class="comment"># 散开模式：回到右上角 (0, 30)</span>
+            <span class="keyword">return</span> GHOST_SCATTER_TARGETS[self.name]
+        
+        <span class="keyword">elif</span> mode == <span class="string">"chase"</span>:
+            <span class="comment"># 追逐模式：直接追吃豆人脚下的格子</span>
+            pacman_rect = self._game_state.pacman_rect
+            <span class="comment"># 把像素坐标转换成网格坐标 (row, col)</span>
+            target = self._get_idx_from_coords(
+                (pacman_rect[<span class="number">0</span>], pacman_rect[<span class="number">1</span>])
+            )
+            <span class="keyword">return</span> target</code></pre>
+                </div>
+
+                <p><strong>关键方法</strong>：<code>_get_idx_from_coords()</code> 把吃豆人的像素坐标转换成网格坐标。</p>
+
+                <h3>Pinky（粉色）：预判前方 4 格</h3>
+                <p>
+                    伏击型策略：瞄准吃豆人前进方向的前方 4 格。当玩家直线逃跑时，Pinky 会"抄近路"到前方拦截！
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="file-path">src/sprites/ghosts.py - Pinky 实现</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code><span class="keyword">class</span> <span class="class-name">Pinky</span>(Ghost):
+    <span class="string">"""粉色 Pinky：伏击型追逐"""</span>
+    
+    <span class="keyword">def</span> <span class="function">determine_target</span>(self):
+        mode = self._game_state.ghost_mode
+        
+        <span class="keyword">if</span> mode == <span class="string">"scatter"</span>:
+            <span class="comment"># 散开模式：回到左上角 (0, 0)</span>
+            <span class="keyword">return</span> GHOST_SCATTER_TARGETS[self.name]
+        
+        <span class="keyword">elif</span> mode == <span class="string">"chase"</span>:
+            <span class="comment"># 追逐模式：瞄吃豆人面前 4 格</span>
+            <span class="keyword">return</span> self.calculate_pacman_direction()
+    
+    <span class="keyword">def</span> <span class="function">calculate_pacman_direction</span>(self):
+        <span class="comment"># 读取吃豆人当前方向：'l'/'r'/'u'/'d'</span>
+        pacman_dir = self._game_state.pacman_direction
+        pacman_rect = self._game_state.pacman_rect
+        
+        <span class="comment"># 像素坐标转网格坐标</span>
+        pacman_rect = self._get_idx_from_coords(
+            (pacman_rect[<span class="number">0</span>], pacman_rect[<span class="number">1</span>])
+        )
+        
+        <span class="comment"># 关键：调用 get_target_pacman_dir，默认 look_ahead=4</span>
+        <span class="keyword">return</span> self.get_target_pacman_dir(
+            pacman_rect, pacman_dir
+        )</code></pre>
+                </div>
+
+                <p><strong>核心方法</strong> <code>get_target_pacman_dir()</code>：根据吃豆人方向计算前方 N 格的目标位置。</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="file-path">src/sprites/ghosts.py - 前方目标计算</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code><span class="keyword">def</span> <span class="function">get_target_pacman_dir</span>(self, pacman_rect, pacman_dir, look_ahead=<span class="number">4</span>):
+    <span class="string">"""计算吃豆人前方 look_ahead 格的目标"""</span>
+    
+    <span class="keyword">if</span> pacman_dir == <span class="string">"l"</span>:  <span class="comment"># 向左</span>
+        target = (pacman_rect[<span class="number">0</span>], pacman_rect[<span class="number">1</span>] - look_ahead)
+        <span class="comment"># 处理隧道穿越</span>
+        <span class="keyword">if</span> target[<span class="number">1</span>] &lt; <span class="number">0</span>:
+            target = (pacman_rect[<span class="number">0</span>], self.num_cols - look_ahead - <span class="number">1</span>)
+        <span class="keyword">return</span> target
+    
+    <span class="keyword">elif</span> pacman_dir == <span class="string">"r"</span>:  <span class="comment"># 向右</span>
+        target = (pacman_rect[<span class="number">0</span>], pacman_rect[<span class="number">1</span>] + look_ahead)
+        <span class="keyword">if</span> target[<span class="number">1</span>] > self.num_cols:
+            target = (pacman_rect[<span class="number">0</span>], <span class="number">0</span>)
+        <span class="keyword">return</span> target
+    
+    <span class="keyword">elif</span> pacman_dir == <span class="string">"u"</span>:  <span class="comment"># 向上</span>
+        <span class="keyword">return</span> (pacman_rect[<span class="number">0</span>] - look_ahead, pacman_rect[<span class="number">1</span>])
+    
+    <span class="keyword">elif</span> pacman_dir == <span class="string">"d"</span>:  <span class="comment"># 向下</span>
+        <span class="keyword">return</span> (pacman_rect[<span class="number">0</span>] + look_ahead, pacman_rect[<span class="number">1</span>])
+    
+    <span class="keyword">else</span>:
+        <span class="keyword">return</span> pacman_rect  <span class="comment"># 没有方向时，目标就是脚下</span></code></pre>
+                </div>
+
+                <h3>Inky（青色）：向量镜像包抄</h3>
+                <p>
+                    最复杂的策略：基于 Blinky 和吃豆人位置计算镜像点。Inky 的路径最"飘"，会根据 Blinky 和吃豆人的相对位置形成包抄！
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="file-path">src/sprites/ghosts.py - Inky 实现</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code><span class="keyword">class</span> <span class="class-name">Inky</span>(Ghost):
+    <span class="string">"""青色 Inky：向量镜像追逐（最复杂）"""</span>
+    
+    <span class="keyword">def</span> <span class="function">calculate_inky_target</span>(self):
+        pacman_rect = self._game_state.pacman_rect
+        pacman_rect = self._get_idx_from_coords(
+            (pacman_rect[<span class="number">0</span>], pacman_rect[<span class="number">1</span>])
+        )
+        pacman_dir = self._game_state.pacman_direction
+        
+        <span class="comment"># 关键：必须读取 Blinky 的当前位置（每帧更新）</span>
+        blinky_cell = self._game_state.blinky_matrix_pos
+        
+        <span class="comment"># 步骤 1：吃豆人前方 2 格</span>
+        inky_pacman_target = self.get_target_pacman_dir(
+            pacman_rect, pacman_dir, look_ahead=<span class="number">2</span>
+        )
+        
+        <span class="comment"># 步骤 2：计算向量 Blinky → 伪目标点</span>
+        vec_row = inky_pacman_target[<span class="number">0</span>] - blinky_cell[<span class="number">0</span>]
+        vec_col = inky_pacman_target[<span class="number">1</span>] - blinky_cell[<span class="number">1</span>]
+        
+        <span class="comment"># 步骤 3：向量加倍，得到最终目标</span>
+        target_row = blinky_cell[<span class="number">0</span>] + vec_row * <span class="number">2</span>
+        target_col = blinky_cell[<span class="number">1</span>] + vec_col * <span class="number">2</span>
+        
+        <span class="keyword">return</span> target_row, target_col
+    
+    <span class="keyword">def</span> <span class="function">determine_target</span>(self):
+        mode = self._game_state.ghost_mode
+        <span class="keyword">if</span> mode == <span class="string">"scatter"</span>:
+            <span class="keyword">return</span> GHOST_SCATTER_TARGETS[self.name]  <span class="comment"># 左下角</span>
+        <span class="keyword">elif</span> mode == <span class="string">"chase"</span>:
+            <span class="keyword">return</span> self.calculate_inky_target()</code></pre>
+                </div>
+
+                <div class="info-box">
+                    <strong>数学原理：</strong>
+                    <ol style="margin: 0.5em 0; padding-left: 1.5em; line-height: 1.8;">
+                        <li>先找到吃豆人前方 2 格的点 P</li>
+                        <li>计算从 Blinky 到 P 的向量 V = P - Blinky</li>
+                        <li>目标 = Blinky + V × 2</li>
+                    </ol>
+                    <p style="margin-top: 0.5em;">
+                        <strong>依赖关系：</strong>Blinky 必须在每帧更新 <code>game_state.blinky_matrix_pos</code>，
+                        否则 Inky 的锚点就过时了。
+                    </p>
+                </div>
+
+                <h3>Clyde（橙色）：距离切换策略</h3>
+                <p>
+                    胆小鬼策略：远时随机乱走，近时突然追击。Clyde 远看像在闲逛，一旦靠近就突然变得激进，与 Blinky 的持续压迫形成互补！
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="file-path">src/sprites/ghosts.py - Clyde 实现</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code><span class="keyword">class</span> <span class="class-name">Clyde</span>(Ghost):
+    <span class="string">"""橙色 Clyde：距离切换「随机 / 追逐」"""</span>
+    
+    <span class="keyword">def</span> <span class="function">get_clyde_random_target</span>(self):
+        pacman_rect = self._game_state.pacman_rect
+        pacman_rect = self._get_idx_from_coords(
+            (pacman_rect[<span class="number">0</span>], pacman_rect[<span class="number">1</span>])
+        )
+        
+        <span class="comment"># 第一帧还没有当前位置</span>
+        <span class="keyword">if not</span> self.curr_pos:
+            <span class="keyword">return</span> pacman_rect
+        
+        <span class="comment"># 计算曼哈顿距离：|dr| + |dc|</span>
+        dis = abs(pacman_rect[<span class="number">0</span>] - self.curr_pos[<span class="number">0</span>]) + \
+              abs(pacman_rect[<span class="number">1</span>] - self.curr_pos[<span class="number">1</span>])
+        
+        <span class="comment"># 距离 > 8 格：假装随机</span>
+        <span class="keyword">if</span> dis > <span class="number">8</span>:
+            <span class="keyword">return</span> self.get_random_target()
+        <span class="comment"># 距离 ≤ 8 格：真正追击吃豆人</span>
+        <span class="keyword">return</span> pacman_rect
+    
+    <span class="keyword">def</span> <span class="function">get_random_target</span>(self):
+        <span class="comment"># 在整个地图范围内随机选一个格子</span>
+        rand_row = random.randrange(<span class="number">0</span>, self.num_rows)
+        rand_col = random.randrange(<span class="number">0</span>, self.num_cols)
+        <span class="keyword">return</span> rand_row, rand_col
+    
+    <span class="keyword">def</span> <span class="function">determine_target</span>(self):
+        mode = self._game_state.ghost_mode
+        <span class="keyword">if</span> mode == <span class="string">"scatter"</span>:
+            <span class="keyword">return</span> GHOST_SCATTER_TARGETS[self.name]  <span class="comment"># 右下角</span>
+        <span class="keyword">elif</span> mode == <span class="string">"chase"</span>:
+            <span class="keyword">return</span> self.get_clyde_random_target()</code></pre>
+                </div>
+
+                <h3>移动执行：贪心算法</h3>
+                <p>
+                    所有幽灵确定目标后，移动逻辑是统一的：在每个岔路口选择最接近目标的方向（贪心一步）。
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="file-path">src/utils/ghost_movement_utils.py</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code><span class="keyword">def</span> <span class="function">get_direction</span>(curr_pos, target_pos, valid_directions):
+    <span class="string">"""在岔路口选择最接近目标的方向（贪心一步）"""</span>
+    best_dir = <span class="keyword">None</span>
+    best_dist = float(<span class="string">'inf'</span>)
+    
+    <span class="keyword">for</span> direction <span class="keyword">in</span> valid_directions:
+        next_pos = (curr_pos[<span class="number">0</span>] + direction[<span class="number">0</span>], 
+                    curr_pos[<span class="number">1</span>] + direction[<span class="number">1</span>])
+        <span class="comment"># 欧氏距离的平方（避免开方，性能更好）</span>
+        dist = (next_pos[<span class="number">0</span>] - target_pos[<span class="number">0</span>])**<span class="number">2</span> + \
+               (next_pos[<span class="number">1</span>] - target_pos[<span class="number">1</span>])**<span class="number">2</span>
+        <span class="keyword">if</span> dist &lt; best_dist:
+            best_dist = dist
+            best_dir = direction
+    
+    <span class="keyword">return</span> best_dir</code></pre>
+                </div>
+
+                <div class="info-box tip">
+                    <strong>为什么不用 A* 寻路？</strong>
+                    <br>
+                    四鬼采用岔路口贪心策略，计算轻量，行为接近街机原版。A* 寻路虽然能找到最优路径，
+                    但计算量大，而且会让幽灵变得"太聪明"，失去经典吃豆人的游戏感觉。
+                </div>
+
+                <h3>状态机：三种模式切换</h3>
+                <p>
+                    幽灵行为由 <code>GameState.ghost_mode</code> 控制，在三种模式间切换：
+                </p>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5em; margin: 1.5em 0;">
+                    <div class="info-box">
+                        <h4 style="margin-top: 0; color: var(--accent-green);">🔴 Scatter（散开）</h4>
+                        <p style="margin: 0.5em 0; line-height: 1.6;">
+                            各自回到地图四角的固定位置徘徊。这是躲避幽灵的好时机！
+                        </p>
+                        <p style="margin: 0.5em 0; font-size: 0.9em; color: var(--text-secondary);">
+                            <strong>持续时间：</strong>约 7 秒
+                        </p>
+                    </div>
+                    <div class="info-box">
+                        <h4 style="margin-top: 0; color: var(--accent-gold);">🟡 Chase（追逐）</h4>
+                        <p style="margin: 0.5em 0; line-height: 1.6;">
+                            使用上述 AI 策略主动追踪吃豆人。每只幽灵有自己的目标计算方法。
+                        </p>
+                        <p style="margin: 0.5em 0; font-size: 0.9em; color: var(--text-secondary);">
+                            <strong>持续时间：</strong>约 20 秒
+                        </p>
+                    </div>
+                    <div class="info-box">
+                        <h4 style="margin-top: 0; color: #2d2d8a;">🔵 Frightened（恐慌）</h4>
+                        <p style="margin: 0.5em 0; line-height: 1.6;">
+                            吃能量豆后触发，幽灵变蓝并随机逃跑，此时可以被吃掉！
+                        </p>
+                        <p style="margin: 0.5em 0; font-size: 0.9em; color: var(--text-secondary);">
+                            <strong>持续时间：</strong>约 6 秒（会逐渐缩短）
+                        </p>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="file-path">模式切换由定时器事件驱动</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code><span class="comment"># src/runner.py</span>
+<span class="keyword">def</span> <span class="function">create_ghost_mode_event</span>(self):
+    CUSTOM_EVENT = pygame.USEREVENT + <span class="number">1</span>
+    <span class="comment"># 从 JSON 读取 scatter/chase 切换时间</span>
+    pygame.time.set_timer(
+        CUSTOM_EVENT,
+        self.game_state.mode_change_events * <span class="number">1000</span>
+    )</code></pre>
+                </div>
+
+                <h3>总结：四鬼策略对比</h3>
+                <table style="width: 100%; border-collapse: collapse; margin: 1.5em 0;">
+                    <thead>
+                        <tr style="background: var(--accent-green); color: white;">
+                            <th style="padding: 0.8em; text-align: left;">幽灵</th>
+                            <th style="padding: 0.8em; text-align: left;">策略</th>
+                            <th style="padding: 0.8em; text-align: left;">核心算法</th>
+                            <th style="padding: 0.8em; text-align: left;">游戏特点</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom: 1px solid var(--border-light);">
+                            <td style="padding: 0.8em; font-weight: 600; color: #ff0000;">Blinky</td>
+                            <td style="padding: 0.8em;">直追</td>
+                            <td style="padding: 0.8em; font-family: monospace; font-size: 0.9em;">target = pacman_pos</td>
+                            <td style="padding: 0.8em;">持续压迫，玩家的"影子"</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border-light);">
+                            <td style="padding: 0.8em; font-weight: 600; color: #ffb6c1;">Pinky</td>
+                            <td style="padding: 0.8em;">埋伏</td>
+                            <td style="padding: 0.8em; font-family: monospace; font-size: 0.9em;">target = pacman_ahead(4)</td>
+                            <td style="padding: 0.8em;">抄近路拦截，预判玩家动向</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border-light);">
+                            <td style="padding: 0.8em; font-weight: 600; color: #00ffff;">Inky</td>
+                            <td style="padding: 0.8em;">包抄</td>
+                            <td style="padding: 0.8em; font-family: monospace; font-size: 0.9em;">target = blinky + vec×2</td>
+                            <td style="padding: 0.8em;">路径最飘忽，依赖 Blinky 位置</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0.8em; font-weight: 600; color: #ffa500;">Clyde</td>
+                            <td style="padding: 0.8em;">胆小</td>
+                            <td style="padding: 0.8em; font-family: monospace; font-size: 0.9em;">if dist>8: random else: chase</td>
+                            <td style="padding: 0.8em;">远时闲逛，近时激进</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="info-box">
+                    <strong>设计精妙之处：</strong>
+                    <ul style="margin: 0.5em 0; padding-left: 1.5em; line-height: 1.8;">
+                        <li>使用 <strong>ABC + @abstractmethod</strong> 强制每只幽灵实现自己的策略</li>
+                        <li>通过 <strong>GameState</strong> 共享数据（如 Blinky 位置供 Inky 使用）</li>
+                        <li>所有幽灵共用<strong>移动逻辑</strong>（贪心算法），只有目标计算不同</li>
+                        <li><strong>状态机</strong>控制模式切换，增加游戏节奏变化</li>
+                    </ul>
+                    <p style="margin-top: 1em;">
+                        这就是为什么吃豆人游戏即使简单，玩起来却很有挑战性——四只幽灵的不同策略形成了复杂的协作追击！
+                    </p>
+                </div>
+            </section>
+
+            <section id="sounds-py">
+                <h2>十一、音效系统 sounds.py</h2>
+                <p>
+                    SoundManager 使用单例模式，确保全局只有一个音效管理器实例。
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="file-path">src/sounds.py（单例模式）</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code><span class="keyword">class</span> <span class="class-name">SoundManager</span>:
+    _instance = <span class="keyword">None</span>
+
+    <span class="keyword">def</span> <span class="function">__new__</span>(cls, *args, **kwargs):
+        <span class="keyword">if</span> <span class="keyword">not</span> cls._instance:
+            cls._instance = super().__new__(cls, *args, **kwargs)
+        <span class="keyword">return</span> cls._instance
+
+    <span class="keyword">def</span> <span class="function">__init__</span>(self):
+        <span class="keyword">if</span> <span class="keyword">not</span> hasattr(self, <span class="string">"_initialized"</span>):
+            self._initialized = <span class="keyword">True</span>
+            self._sounds = {}
+            pygame.mixer.pre_init()
+
+    <span class="keyword">def</span> <span class="function">play_sound</span>(self, name):
+        <span class="keyword">if</span> name <span class="keyword">in</span> self._sounds:
+            self._channels[name].play(self._sounds[name][<span class="string">'sound'</span>])</code></pre>
+                </div>
+
+                <div class="info-box">
+                    <strong>单例模式的作用：</strong>在 runner.py 里创建一次 <code>SoundManager()</code> 并加载音效后，
+                    在其他模块里再次 <code>SoundManager()</code> 会得到同一个对象，可以直接播放已加载的音效。
+                </div>
+            </section>
+
+            <section id="knowledge">
+                <h2>十二、Python 知识点速查表</h2>
+                <table>
+                    <tr>
+                        <th>知识点</th>
+                        <th>出现章节</th>
+                        <th>项目中的例子</th>
+                    </tr>
+                    <tr>
+                        <td>变量与类型</td>
+                        <td>四</td>
+                        <td><code>SCREEN_WIDTH = 1024</code></td>
+                    </tr>
+                    <tr>
+                        <td>元组 tuple</td>
+                        <td>四</td>
+                        <td><code>WHITE = (255, 255, 255)</code></td>
+                    </tr>
+                    <tr>
+                        <td>列表 list</td>
+                        <td>八</td>
+                        <td><code>matrix[row]</code></td>
+                    </tr>
+                    <tr>
+                        <td>字典 dict</td>
+                        <td>四、八</td>
+                        <td><code>GHOST_DELAYS["blinky"]</code></td>
+                    </tr>
+                    <tr>
+                        <td>if/elif/else</td>
+                        <td>七</td>
+                        <td><code>if key == K_LEFT:</code></td>
+                    </tr>
+                    <tr>
+                        <td>for 循环</td>
+                        <td>八</td>
+                        <td><code>for row in matrix:</code></td>
+                    </tr>
+                    <tr>
+                        <td>while 循环</td>
+                        <td>五</td>
+                        <td><code>while running:</code></td>
+                    </tr>
+                    <tr>
+                        <td>函数 def</td>
+                        <td>八</td>
+                        <td><code>def draw_wall(self, **kwargs):</code></td>
+                    </tr>
+                    <tr>
+                        <td>类 class</td>
+                        <td>三、六</td>
+                        <td><code>class GameState:</code></td>
+                    </tr>
+                    <tr>
+                        <td>继承</td>
+                        <td>九、十</td>
+                        <td><code>class Pacman(Sprite):</code></td>
+                    </tr>
+                    <tr>
+                        <td>@property</td>
+                        <td>六</td>
+                        <td><code>@property def points(self):</code></td>
+                    </tr>
+                    <tr>
+                        <td>文件读写</td>
+                        <td>八</td>
+                        <td><code>with open(path) as fp:</code></td>
+                    </tr>
+                    <tr>
+                        <td>异常 raise</td>
+                        <td>六</td>
+                        <td><code>raise ValueError("...")</code></td>
+                    </tr>
+                    <tr>
+                        <td>列表推导式</td>
+                        <td>九</td>
+                        <td><code>[load(p) for p in PATHS]</code></td>
+                    </tr>
+                    <tr>
+                        <td>抽象基类 ABC</td>
+                        <td>十</td>
+                        <td><code>class Ghost(Sprite, ABC):</code></td>
+                    </tr>
+                    <tr>
+                        <td>单例模式</td>
+                        <td>十一</td>
+                        <td><code>__new__</code> 控制实例</td>
+                    </tr>
+                    <tr>
+                        <td>策略模式</td>
+                        <td>八</td>
+                        <td><code>function_mapper</code> 字典</td>
+                    </tr>
+                    <tr>
+                        <td>多态</td>
+                        <td>十</td>
+                        <td>四鬼各自实现 <code>determine_target()</code></td>
+                    </tr>
+                </table>
+            </section>
+        </main>
+
+        <aside class="sidebar-right">
+            <h3>章节目录</h3>
+            <ul class="toc-list">
+                <li><a href="#game-rules">游戏说明</a></li>
+                <li><a href="#overview">一、项目概览</a></li>
+                <li><a href="#architecture">二、架构设计</a></li>
+                <li><a href="#main-py">三、入口文件</a></li>
+                <li><a href="#configs-py">四、常量管理</a></li>
+                <li><a href="#runner-py">五、主循环</a></li>
+                <li><a href="#state-py">六、状态机</a></li>
+                <li><a href="#event-py">七、事件处理</a></li>
+                <li><a href="#grid-py">八、关卡系统深度解析</a></li>
+                <li><a href="#pacman-py">九、吃豆人</a></li>
+                <li><a href="#ghosts-py">十、幽灵 AI</a></li>
+                <li><a href="#sounds-py">十一、音效系统</a></li>
+                <li><a href="#knowledge">十二、知识速查</a></li>
+            </ul>
+        </aside>
+    </div>
+
+    <footer>
+        <p>本教程基于 PyPacman 开源项目，所有代码示例均为真实项目代码</p>
+        <p>适合 Python 初学者 | 配合源码阅读效果更佳</p>
+    </footer>
+
+    <script>
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function copyCode(btn) {
+            const code = btn.closest('.code-block').querySelector('code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                btn.textContent = '已复制';
+                setTimeout(() => btn.textContent = '复制', 2000);
+            });
+        }
+
+        function toggleMobileMenu() {
+            document.querySelector('.sidebar-right').classList.toggle('show');
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const id = entry.target.id;
+                const tocLink = document.querySelector(`.toc-list a[href="#${id}"]`);
+                const tocItem = tocLink?.parentElement;
+                
+                if (entry.isIntersecting) {
+                    document.querySelectorAll('.toc-list li').forEach(li => li.classList.remove('active'));
+                    tocItem?.classList.add('active');
+                }
+            });
+        }, { rootMargin: '-20% 0px -80% 0px' });
+
+        document.querySelectorAll('main section[id]').forEach(section => {
+            observer.observe(section);
+        });
+    </script>
+</body>
+</html>
